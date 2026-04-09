@@ -3,6 +3,9 @@ import OpenAI from 'openai';
 import './ChatInterface.css';
 
 const ChatInterface = ({ data }) => {
+    // 1. Fetch the key from Vite's environment
+    const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+
     const [messages, setMessages] = useState([
         {
             role: 'assistant',
@@ -13,18 +16,33 @@ const ChatInterface = ({ data }) => {
     const [isLoading, setIsLoading] = useState(false);
     const chatEndRef = useRef(null);
 
-    // Auto-scroll to latest message
+    // Auto-scroll logic
     useEffect(() => {
         chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
+    // 2. Initialize OpenAI inside the component or a dedicated handler to ensure 
+    // it uses the most current environment value.
     const openai = new OpenAI({
-        apiKey: import.meta.env.VITE_OPENAI_API_KEY,
+        apiKey: apiKey,
         dangerouslyAllowBrowser: true
     });
 
     const handleSend = async () => {
         if (!input.trim() || isLoading) return;
+
+        // 3. Fail-fast validation: Check if the API key is valid before making the POST request
+        if (!apiKey || apiKey === "" || apiKey.includes("VITE_OPENAI")) {
+            setMessages(prev => [...prev,
+            { role: 'user', content: input },
+            {
+                role: 'assistant',
+                content: "Configuration Error: The OpenAI API Key is missing or incorrectly configured in the environment. Please check your GitHub Secrets."
+            }
+            ]);
+            setInput('');
+            return;
+        }
 
         const userMessage = { role: 'user', content: input };
         setMessages(prev => [...prev, userMessage]);
@@ -52,10 +70,16 @@ const ChatInterface = ({ data }) => {
                 content: response.choices[0].message.content
             }]);
         } catch (error) {
-            console.error("Error:", error);
+            console.error("OpenAI API Error:", error);
+
+            // Handle specific 401 errors gracefully in the UI
+            const errorMessage = error.status === 401
+                ? "Unauthorized: The API Key provided is invalid. Please verify the key in your deployment settings."
+                : "I encountered a connection issue. Luis's 25+ years of experience are worth the wait—please try again in a moment.";
+
             setMessages(prev => [...prev, {
                 role: 'assistant',
-                content: "I'm sorry, I encountered a connection issue. However, I can confirm Luis is an expert in AI and Big Data Transformation."
+                content: errorMessage
             }]);
         } finally {
             setIsLoading(false);
