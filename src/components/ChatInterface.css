@@ -1,76 +1,75 @@
-/* Reset global para asegurar que no haya bordes fantasmas */
+/* 1. Global Reset - Force full bleed */
+html,
 body,
-html {
+#root {
     margin: 0;
     padding: 0;
     width: 100%;
-    background-color: #0b0e14;
+    height: 100%;
+    background-color: #0d1117;
     color: #ffffff;
-    overflow-x: hidden;
+    overflow: hidden;
+    /* We'll use internal scrolling */
 }
 
+/* 2. Main Wrapper - Split Screen */
 .portfolio-wrapper {
     display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-    width: 100%;
-    background-color: #0b0e14;
+    width: 100vw;
+    height: 100vh;
 }
 
-/* Layout de dos columnas para pantallas grandes */
-@media (min-width: 1024px) {
-    .portfolio-wrapper {
-        flex-direction: row;
-    }
-}
-
-/* Panel Izquierdo: Perfil */
-.profile-panel {
-    flex: 0 0 350px;
-    padding: 40px;
+/* 3. Left Panel: Profile Sidebar */
+.sidebar {
+    width: 380px;
+    /* Fixed width for profile */
+    background-color: #0d1117;
+    border-right: 1px solid #30363d;
     display: flex;
     flex-direction: column;
     align-items: center;
-    background-color: #0b0e14;
-    border-right: 1px solid #1e232c;
+    padding: 60px 30px;
+    flex-shrink: 0;
 }
 
-.profile-panel img {
+.sidebar img {
     width: 180px;
     height: 180px;
     border-radius: 24px;
-    border: 2px solid #00f2ff;
-    box-shadow: 0 0 20px rgba(0, 242, 255, 0.2);
-    object-fit: cover;
+    border: 2px solid #39c5bb;
+    box-shadow: 0 0 20px rgba(57, 197, 187, 0.2);
+    margin-bottom: 25px;
 }
 
-.profile-info {
-    margin-top: 25px;
+.sidebar h1 {
+    font-size: 1.6rem;
+    margin: 10px 0;
     text-align: center;
 }
 
-.profile-info h1 {
-    font-size: 1.8rem;
-    margin: 0;
-    background: linear-gradient(90deg, #fff, #00f2ff);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.profile-info p {
+.sidebar .tagline {
     color: #8b949e;
+    text-align: center;
     font-size: 0.95rem;
-    line-height: 1.5;
-    margin-top: 10px;
+    line-height: 1.6;
 }
 
-/* Panel Derecho: Chat */
-.chat-panel {
-    flex: 1;
+.sidebar-actions {
+    margin-top: auto;
+    /* Push buttons to bottom of sidebar */
+    width: 100%;
     display: flex;
     flex-direction: column;
-    background-color: #0d1117;
-    height: 100vh;
+    gap: 12px;
+}
+
+/* 4. Right Panel: Chat Dashboard */
+.chat-dashboard {
+    flex: 1;
+    /* Takes all remaining space */
+    display: flex;
+    flex-direction: column;
+    background-color: #0b0e14;
 }
 
 .messages-container {
@@ -79,66 +78,79 @@ html {
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 24px;
 }
 
-/* Burbujas tipo Mensajería Moderna */
+/* Message Bubbles - Modern Minimalist */
 .message-bubble {
-    max-width: 80%;
-    padding: 16px 20px;
-    border-radius: 18px;
-    font-size: 1rem;
+    max-width: 75%;
+    padding: 18px 24px;
+    border-radius: 12px;
+    font-size: 1.05rem;
     line-height: 1.6;
 }
 
 .message-bubble.assistant {
     background-color: #161b22;
-    color: #e6edf3;
-    align-self: flex-start;
     border: 1px solid #30363d;
+    align-self: flex-start;
 }
 
 .message-bubble.user {
-    background-color: #00f2ff;
+    background-color: #39c5bb;
     color: #000;
     align-self: flex-end;
     font-weight: 500;
 }
 
-/* Área de Input */
-.input-area {
-    padding: 30px 40px;
-    background-color: #0d1117;
-    border-top: 1px solid #30363d;
+/* 5. Input Area - Floating at bottom of chat panel */
+.input-footer {
+    padding: 30px 60px;
+    background-color: #0b0e14;
 }
 
-.input-wrapper {
+.input-container {
     display: flex;
     background-color: #161b22;
-    border-radius: 12px;
-    padding: 5px;
     border: 1px solid #30363d;
+    border-radius: 100px;
+    padding: 8px 12px;
+    transition: border-color 0.2s;
 }
 
-.input-wrapper input {
+.input-container:focus-within {
+    border-color: #39c5bb;
+}
+
+.input-container input {
     flex: 1;
     background: transparent;
     border: none;
-    color: white;
-    padding: 15px;
-    font-size: 1rem;
+    color: #fff;
+    padding: 12px 20px;
+    font-size: 1.1rem;
 }
 
-.input-wrapper input:focus {
+.input-container input:focus {
     outline: none;
 }
 
-.input-wrapper button {
-    background-color: #00f2ff;
-    color: #000;
-    border: none;
-    padding: 0 25px;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
+/* Responsive: Stack on mobile */
+@media (max-width: 900px) {
+    .portfolio-wrapper {
+        flex-direction: column;
+        overflow-y: auto;
+    }
+
+    .sidebar {
+        width: 100%;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid #30363d;
+    }
+
+    .chat-dashboard {
+        height: auto;
+        min-height: 600px;
+    }
 }
