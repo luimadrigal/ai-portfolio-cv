@@ -2,11 +2,9 @@ import React from 'react'
 import ChatInterface from './components/ChatInterface'
 import { cvData } from './data/cvData'
 import './App.css'
-// Task 1: Import your profile image
 import profileImg from './assets/profile.jpg'
 
 function App() {
-  // Defensive check for data loading
   if (!cvData || !cvData.personal_info) return null;
 
   return (
@@ -14,7 +12,6 @@ function App() {
       <header className="portfolio-header">
         <span className="title-badge">AI-Powered Executive Profile</span>
 
-        {/* Task 2: New Executive Layout */}
         <div className="profile-container">
           <img
             src={profileImg}
@@ -22,11 +19,29 @@ function App() {
             className="profile-photo"
           />
           <div className="profile-text">
-            {/* The ID is needed for the CSS fix */}
             <h1 id="executive-name">{cvData.personal_info.name}</h1>
             <p className="subtitle">
               {cvData.personal_info.title}
             </p>
+
+            {/* Nueva sección de acciones para el CV */}
+            <div className="actions-container">
+              <a
+                href="./CV_Luis_Madrigal.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary"
+              >
+                View Full CV (PDF)
+              </a>
+              <a
+                href="./CV_Luis_Madrigal.pdf"
+                download
+                className="btn-secondary"
+              >
+                Download
+              </a>
+            </div>
           </div>
         </div>
       </header>

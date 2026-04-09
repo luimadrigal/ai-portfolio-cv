@@ -1,129 +1,46 @@
-:root {
-  --bg-color: #0a0a0a;
-  --card-bg: rgba(255, 255, 255, 0.03);
-  --accent-color: #00d4ff;
-  /* Tech blue */
-  --text-primary: #ffffff;
-  --text-secondary: #a0a0a0;
-  --border-color: rgba(255, 255, 255, 0.1);
-  --font-main: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-mono: 'Fira Code', monospace;
+/* --- Executive Actions --- */
+.actions-container {
+  display: flex;
+  gap: 15px;
+  margin-top: 20px;
 }
 
-body {
-  margin: 0;
-  padding: 0;
-  background-color: var(--bg-color);
-  color: var(--text-primary);
+.btn-primary,
+.btn-secondary {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
   font-family: var(--font-main);
-  overflow-x: hidden;
-  -webkit-font-smoothing: antialiased;
 }
 
-.app-container {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 40px 20px;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+.btn-primary {
+  background-color: var(--accent-color);
+  color: #000;
+  border: 1px solid var(--accent-color);
 }
 
-/* --- Executive Header --- */
-.portfolio-header {
-  margin-bottom: 50px;
-  text-align: center;
-}
-
-.title-badge {
+.btn-primary:hover {
+  background-color: transparent;
   color: var(--accent-color);
-  font-family: var(--font-mono);
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 3px;
-  margin-bottom: 25px;
-  display: inline-block;
-  opacity: 0.8;
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
 }
 
-/* Profile Photo + Text Container */
-.profile-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 30px;
-  text-align: left;
+.btn-secondary {
+  background-color: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: var(--text-secondary);
 }
 
 @media (max-width: 768px) {
-  .profile-container {
-    flex-direction: column;
-    text-align: center;
+  .actions-container {
+    justify-content: center;
   }
-}
-
-.profile-photo {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  border: 3px solid var(--accent-color);
-  object-fit: cover;
-  box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
-}
-
-.profile-text {
-  flex: 1;
-}
-
-/* FIX: Clean, Unclipped Executive Name */
-#executive-name {
-  font-size: 3.2rem;
-  letter-spacing: -1.5px;
-  margin: 0 0 10px 0;
-  line-height: 1;
-  /* Key fix to avoid vertical clipping */
-  color: var(--text-primary);
-  /* Optional: Keep a subtle gradient without animation if you like,
-     or just stick to plain white for absolute clean look. 
-     This version uses plain white for maximum legibility based on screenshot fail. */
-  background: none;
-  -webkit-text-fill-color: initial;
-}
-
-.subtitle {
-  color: var(--text-secondary);
-  font-size: 1.1rem;
-  margin: 0;
-  font-weight: 400;
-  max-width: 600px;
-}
-
-/* --- Chat & Footer (Keep these as they are good) --- */
-.chat-window {
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 16px;
-  backdrop-filter: blur(10px);
-  flex-grow: 1;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  /* Important for inner component sizing */
-}
-
-.portfolio-footer {
-  margin-top: 50px;
-  text-align: center;
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  border-top: 1px solid var(--border-color);
-  padding-top: 25px;
-}
-
-.footer-note {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  opacity: 0.6;
-  margin-top: 5px;
 }
