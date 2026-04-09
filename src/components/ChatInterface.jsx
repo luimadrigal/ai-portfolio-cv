@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import './ChatInterface.css';
 
 const ChatInterface = ({ data }) => {
-    // Environment variable for Groq API Key
     const apiKey = import.meta.env.VITE_GROQ_API_KEY;
 
     const [messages, setMessages] = useState([
@@ -15,7 +14,6 @@ const ChatInterface = ({ data }) => {
     const [isLoading, setIsLoading] = useState(false);
     const chatEndRef = useRef(null);
 
-    // Auto-scroll to latest message
     useEffect(() => {
         chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
@@ -42,30 +40,19 @@ const ChatInterface = ({ data }) => {
                             role: "system",
                             content: `You are the executive professional assistant for Luis Madrigal Lobo. 
                             Context Data: ${JSON.stringify(data)}.
-                            
-                            STRICT INSTRUCTIONS:
-                            1. ALWAYS respond in English, regardless of the user's language.
-                            2. Maintain a professional, executive, and concise tone.
-                            3. Focus on his role as Engineering Director and his Master's in Big Data.
-                            4. If asked about contact info, refer to the buttons in the sidebar.`
+                            STRICT RULES: ALWAYS respond in English. Be concise, executive, and professional.`
                         },
                         { role: "user", content: input }
                     ],
-                    temperature: 0.6,
-                    max_tokens: 1000
+                    temperature: 0.6
                 })
             });
 
             const result = await response.json();
             const text = result.choices[0].message.content;
-
             setMessages(prev => [...prev, { role: 'assistant', content: text }]);
         } catch (error) {
-            console.error("Chat Error:", error);
-            setMessages(prev => [...prev, {
-                role: 'assistant',
-                content: "I encountered a brief connection issue. Please try again or download Luis's CV from the sidebar."
-            }]);
+            setMessages(prev => [...prev, { role: 'assistant', content: "Connection issue. Please try again." }]);
         } finally {
             setIsLoading(false);
         }
@@ -73,13 +60,14 @@ const ChatInterface = ({ data }) => {
 
     return (
         <div className="portfolio-dashboard">
-            {/* LEFT SIDEBAR: FIXED PROFILE */}
             <aside className="sidebar">
                 <div className="profile-container">
+                    {/* FIXED PATH: Removed the dot to use absolute public path */}
                     <img
-                        src="./profile.png"
+                        src="/profile.png"
                         alt="Luis Madrigal Lobo"
                         className="profile-image"
+                        onError={(e) => { e.target.src = "https://via.placeholder.com/150"; }}
                     />
                     <h1>Luis Madrigal Lobo</h1>
                     <p className="job-title">Head of Engineering | Engineering Executive</p>
@@ -87,10 +75,11 @@ const ChatInterface = ({ data }) => {
                 </div>
 
                 <nav className="sidebar-actions">
-                    <a href="./CV_Luis_Madrigal.pdf" target="_blank" className="btn btn-primary">
+                    {/* FIXED PATHS: Absolute paths for PDF access */}
+                    <a href="/CV_Luis_Madrigal.pdf" target="_blank" rel="noopener noreferrer" className="btn btn-primary">
                         View Full CV
                     </a>
-                    <a href="./CV_Luis_Madrigal.pdf" download className="btn btn-secondary">
+                    <a href="/CV_Luis_Madrigal.pdf" download="Luis_Madrigal_CV.pdf" className="btn btn-secondary">
                         Download PDF
                     </a>
                 </nav>
@@ -100,21 +89,14 @@ const ChatInterface = ({ data }) => {
                 </div>
             </aside>
 
-            {/* RIGHT PANEL: EXPANSIVE CHAT */}
             <main className="chat-canvas">
                 <div className="messages-flow">
                     {messages.map((msg, idx) => (
                         <div key={idx} className={`message-row ${msg.role}`}>
-                            <div className="bubble">
-                                {msg.content}
-                            </div>
+                            <div className="bubble">{msg.content}</div>
                         </div>
                     ))}
-                    {isLoading && (
-                        <div className="message-row assistant">
-                            <div className="bubble typing">Luis's Assistant is thinking...</div>
-                        </div>
-                    )}
+                    {isLoading && <div className="message-row assistant"><div className="bubble">Thinking...</div></div>}
                     <div ref={chatEndRef} />
                 </div>
 
@@ -125,11 +107,9 @@ const ChatInterface = ({ data }) => {
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                            placeholder="Ask me anything about Luis's career..."
+                            placeholder="Ask me about Luis's career..."
                         />
-                        <button onClick={handleSend} disabled={isLoading}>
-                            {isLoading ? '...' : 'Send'}
-                        </button>
+                        <button onClick={handleSend} disabled={isLoading}>Send</button>
                     </div>
                 </footer>
             </main>
