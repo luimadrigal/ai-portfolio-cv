@@ -4,25 +4,23 @@ import { cvData } from './data/cvData'
 import './App.css'
 
 function App() {
+  // Verificación de datos antes de renderizar
+  if (!cvData) return <div>Cargando datos maestros...</div>;
+
   return (
     <div className="app-container">
-      {/* Header Ejecutivo */}
-      <header className="portfolio-header">
-        <h1>{cvData?.personal_info?.name || "Luis Madrigal Lobo"}</h1>
-        <p className="title">{cvData.personalInfo.title}</p>
+      <header>
+        {/* Usamos el nombre exacto que definiste en cvData.js */}
+        <h1>{cvData.personal_info?.name}</h1>
+        <p>{cvData.personal_info?.title}</p>
       </header>
 
-      {/* Interfaz de IA interactiva */}
       <main>
+        {/* Solo cargamos el chat si la API Key y los datos están listos */}
         <ChatInterface data={cvData} />
       </main>
-
-      {/* Footer con enfoque en tu Maestría */}
-      <footer className="portfolio-footer">
-        <p>© 2026 - Especialista en Big Data & Business Analytics</p>
-      </footer>
     </div>
-  )
+  );
 }
 
 export default App
