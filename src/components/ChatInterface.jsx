@@ -5,7 +5,7 @@ import { cvData } from '../data/cvData';
 
 const openai = new OpenAI({
     apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-    dangerouslyAllowBrowser: true
+    dangerouslyAllowBrowser: true // Necesario para que corra desde el navegador del cliente
 });
 
 const ChatInterface = () => {
