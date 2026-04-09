@@ -7,7 +7,7 @@ const ChatInterface = ({ data }) => {
     const [messages, setMessages] = useState([
         {
             role: 'assistant',
-            content: `Hello! I am Luis's AI assistant. I'm ready to discuss his 25+ years of engineering leadership. How can I assist you?`
+            content: `Hello! I am Luis's AI assistant. I can tell you about his leadership of 75+ professionals, his Master's in Big Data, or his strategic impact at Publicis Groupe. What would you like to know?`
         }
     ]);
     const [input, setInput] = useState('');
@@ -18,32 +18,38 @@ const ChatInterface = ({ data }) => {
         chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
-    // Use the explicit v1 endpoint to prevent 404 routing errors
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel(
-        { model: "gemini-1.5-flash" },
-        { apiVersion: "v1" } // This is the crucial line
-    );
-
     const handleSend = async () => {
         if (!input.trim() || isLoading) return;
 
+        // Fail-fast validation
         if (!apiKey || apiKey === "" || apiKey.includes("VITE_GEMINI")) {
             setMessages(prev => [...prev,
             { role: 'user', content: input },
-            { role: 'assistant', content: "Configuration Error: API Key missing." }
+            { role: 'assistant', content: "Configuration Error: API Key missing in environment." }
             ]);
             return;
         }
 
-        setMessages(prev => [...prev, { role: 'user', content: input }]);
+        const userMessage = { role: 'user', content: input };
+        setMessages(prev => [...prev, userMessage]);
         setInput('');
         setIsLoading(true);
 
         try {
-            const prompt = `You are a professional assistant for Luis Madrigal Lobo, an Engineering Director. 
-            Respond concisely based on this data: ${JSON.stringify(data)}. 
-            Question: ${input}`;
+            // Force stable v1 and use the '-latest' suffix to resolve mapping issues
+            const genAI = new GoogleGenerativeAI(apiKey);
+            const model = genAI.getGenerativeModel(
+                { model: "gemini-1.5-flash-latest" },
+                { apiVersion: "v1" }
+            );
+
+            const prompt = `
+                You are the professional AI assistant for Luis Madrigal Lobo. 
+                Base your answers strictly on this data: ${JSON.stringify(data)}. 
+                Highlight his 25+ years of experience and Master's in Big Data.
+                Respond concisely in English.
+                User: ${input}
+            `;
 
             const result = await model.generateContent(prompt);
             const response = await result.response;
@@ -51,15 +57,14 @@ const ChatInterface = ({ data }) => {
 
             setMessages(prev => [...prev, { role: 'assistant', content: text }]);
         } catch (error) {
-            console.error("Gemini Error:", error);
+            console.error("Gemini Critical Error:", error);
 
-            // LOGIC FOR 404/NOT FOUND
-            let errorMsg = "I'm having trouble connecting to the brain. Please check back soon or view Luis's CV!";
+            let displayError = "I encountered a connection issue. Luis's 25+ years of experience are worth the wait—please try again!";
             if (error.message.includes("404")) {
-                errorMsg = "Technical Note: The API endpoint returned a 404. Luis is likely updating the cloud permissions.";
+                displayError = "Service Discovery Error (404). Please ensure the API Key is from a new project in Google AI Studio.";
             }
 
-            setMessages(prev => [...prev, { role: 'assistant', content: errorMsg }]);
+            setMessages(prev => [...prev, { role: 'assistant', content: displayError }]);
         } finally {
             setIsLoading(false);
         }
@@ -73,7 +78,7 @@ const ChatInterface = ({ data }) => {
                         <div className="message-bubble">{msg.content}</div>
                     </div>
                 ))}
-                {isLoading && <div className="loading-indicator">Consulting the expert...</div>}
+                {isLoading && <div className="loading-indicator">Analyzing trajectory...</div>}
                 <div ref={chatEndRef} />
             </div>
             <div className="input-area">
@@ -82,9 +87,9 @@ const ChatInterface = ({ data }) => {
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                    placeholder="Ask about Luis..."
+                    placeholder="Ask about Luis's experience..."
                 />
-                <button onClick={handleSend} disabled={isLoading}>{isLoading ? '...' : 'Send'}</button>
+                <button onClick={handleSend} disabled={isLoading}>Send</button>
             </div>
         </div>
     );
