@@ -13,7 +13,7 @@ function App() {
   if (!cvData?.personal_info) return null;
 
   // We define the PDF path once to keep the code DRY (Don't Repeat Yourself)
-  const pdfPath = `${baseUrl}CV_Luis_Madrigal.pdf`;
+  const pdfPath = `${baseUrl}CV_Luis_Madrigal_Lobo.pdf`;
 
   return (
     <div className="app-container">
