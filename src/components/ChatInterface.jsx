@@ -18,9 +18,12 @@ const ChatInterface = ({ data }) => {
         chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
-    // Force v1 API version for stability
+    // Use the explicit v1 endpoint to prevent 404 routing errors
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }, { apiVersion: 'v1' });
+    const model = genAI.getGenerativeModel(
+        { model: "gemini-1.5-flash" },
+        { apiVersion: "v1" } // This is the crucial line
+    );
 
     const handleSend = async () => {
         if (!input.trim() || isLoading) return;
