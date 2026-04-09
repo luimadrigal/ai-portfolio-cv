@@ -1,51 +1,92 @@
-// src/components/ChatInterface.jsx
 import React, { useState, useRef, useEffect } from 'react';
 import OpenAI from 'openai';
-import { cvData } from '../data/cvData';
+import './ChatInterface.css';
 
-const openai = new OpenAI({
-    apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-    dangerouslyAllowBrowser: true // Necesario para que corra desde el navegador del cliente
-});
-
-const ChatInterface = () => {
+const ChatInterface = ({ data }) => {
     const [messages, setMessages] = useState([
-        { role: 'assistant', content: 'Hi! I am Luis\'s AI assistant. You can ask me about his experience in AI transformation, global team leadership, or specific technical projects.' }
+        {
+            role: 'assistant',
+            content: `Hola, soy el asistente IA de Luis. Puedo hablarte sobre su liderazgo de más de 75 profesionales, su maestría en Big Data o su experiencia en Publicis Groupe. ¿Qué te gustaría saber?`
+        }
     ]);
     const [input, setInput] = useState('');
-    const [loading, setLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const chatEndRef = useRef(null);
 
-    const systemPrompt = `You are a professional assistant for Luis Madrigal Lobo. 
-  Answer based on this data: ${JSON.stringify(cvData)}. 
-  Be professional and highlight his 20+ years of experience and leadership of 75+ headcount[cite: 3, 5].`;
+    // Auto-scroll al último mensaje
+    useEffect(() => {
+        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages]);
 
-    const sendMessage = async () => {
-        if (!input.trim()) return;
-        const newMessages = [...messages, { role: 'user', content: input }];
-        setMessages(newMessages);
+    const openai = new OpenAI({
+        apiKey: import.meta.env.VITE_OPENAI_API_KEY,
+        dangerouslyAllowBrowser: true
+    });
+
+    const handleSend = async () => {
+        if (!input.trim() || isLoading) return;
+
+        const userMessage = { role: 'user', content: input };
+        setMessages(prev => [...prev, userMessage]);
         setInput('');
-        setLoading(true);
+        setIsLoading(true);
 
         try {
             const response = await openai.chat.completions.create({
-                model: "gpt-3.5-turbo",
-                messages: [{ role: "system", content: systemPrompt }, ...newMessages],
+                model: "gpt-4o-mini",
+                messages: [
+                    {
+                        role: "system",
+                        content: `Eres el asistente profesional de Luis Madrigal Lobo. 
+            Responde basado en estos datos: ${JSON.stringify(data)}. 
+            Sé ejecutivo, breve y destaca su liderazgo global y visión técnica.`
+                    },
+                    ...messages,
+                    userMessage
+                ],
             });
-            setMessages([...newMessages, response.choices[0].message]);
+
+            setMessages(prev => [...prev, {
+                role: 'assistant',
+                content: response.choices[0].message.content
+            }]);
         } catch (error) {
             console.error("Error:", error);
+            setMessages(prev => [...prev, {
+                role: 'assistant',
+                content: "Lo siento, tuve un problema de conexión. Pero puedo confirmarte que Luis es experto en AI y Big Data."
+            }]);
         } finally {
-            setLoading(false);
+            setIsLoading(false);
         }
     };
 
     return (
-        <div className="chat-box">
-            <div className="messages">
-                {messages.map((m, i) => <div key={i} className={m.role}>{m.content}</div>)}
+        <div className="chat-interface">
+            <div className="messages-container">
+                {messages.map((msg, idx) => (
+                    <div key={idx} className={`message-wrapper ${msg.role}`}>
+                        <div className="message-bubble">
+                            {msg.content}
+                        </div>
+                    </div>
+                ))}
+                {isLoading && <div className="loading-indicator">Analizando trayectoria...</div>}
+                <div ref={chatEndRef} />
             </div>
-            <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && sendMessage()} />
-            <button onClick={sendMessage} disabled={loading}>Ask AI</button>
+
+            <div className="input-area">
+                <input
+                    type="text"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                    placeholder="Pregúntame sobre la experiencia de Luis..."
+                />
+                <button onClick={handleSend} disabled={isLoading}>
+                    {isLoading ? '...' : 'Enviar'}
+                </button>
+            </div>
         </div>
     );
 };
