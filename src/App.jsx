@@ -4,15 +4,16 @@ import { cvData } from './data/cvData'
 import './App.css'
 
 function App() {
-  if (!cvData) return null;
+  // Defensive check for data loading
+  if (!cvData || !cvData.personal_info) return null;
 
   return (
     <div className="app-container">
       <header className="portfolio-header">
         <span className="title-badge">AI-Powered Executive Profile</span>
-        <h1>{cvData.personal_info?.name}</h1>
-        <p style={{ color: '#a0a0a0', fontSize: '1.2rem' }}>
-          {cvData.personal_info?.title}
+        <h1>{cvData.personal_info.name}</h1>
+        <p className="subtitle">
+          {cvData.personal_info.title}
         </p>
       </header>
 
@@ -22,6 +23,7 @@ function App() {
 
       <footer className="portfolio-footer">
         <p>Heredia, Costa Rica | {cvData.education_certs[0]}</p>
+        <p className="footer-note">Built with React + Vite + OpenAI</p>
       </footer>
     </div>
   )
