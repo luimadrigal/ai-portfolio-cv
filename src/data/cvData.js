@@ -1,6 +1,6 @@
 // src/data/cvData.js
 export const cvData = {
-    personal_info: {
+    personalInfo: {
         name: "Luis Madrigal Lobo",
         title: "Head of Engineering | Engineering Executive | AI Transformation & Big Data",
         location: "Heredia, Costa Rica",

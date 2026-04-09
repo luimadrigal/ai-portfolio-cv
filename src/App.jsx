@@ -8,7 +8,7 @@ function App() {
     <div className="app-container">
       {/* Header Ejecutivo */}
       <header className="portfolio-header">
-        <h1>{cvData.personalInfo.name}</h1>
+        <h1>{cvData?.personal_info?.name || "Luis Madrigal Lobo"}</h1>
         <p className="title">{cvData.personalInfo.title}</p>
       </header>
 
