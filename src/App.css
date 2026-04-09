@@ -2,10 +2,12 @@
   --bg-color: #0a0a0a;
   --card-bg: rgba(255, 255, 255, 0.03);
   --accent-color: #00d4ff;
-  /* Azul tecnológico */
+  /* Tech blue */
   --text-primary: #ffffff;
   --text-secondary: #a0a0a0;
   --border-color: rgba(255, 255, 255, 0.1);
+  --font-main: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Fira Code', monospace;
 }
 
 body {
@@ -13,8 +15,9 @@ body {
   padding: 0;
   background-color: var(--bg-color);
   color: var(--text-primary);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: var(--font-main);
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
 .app-container {
@@ -26,48 +29,101 @@ body {
   flex-direction: column;
 }
 
-/* Header Estilo Executive */
+/* --- Executive Header --- */
 .portfolio-header {
+  margin-bottom: 50px;
   text-align: center;
-  margin-bottom: 60px;
-}
-
-.portfolio-header h1 {
-  font-size: 3rem;
-  letter-spacing: -1px;
-  margin-bottom: 10px;
-  background: linear-gradient(90deg, #fff, var(--accent-color));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
 }
 
 .title-badge {
   color: var(--accent-color);
-  font-family: 'Fira Code', monospace;
-  font-size: 0.9rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
   text-transform: uppercase;
-  letter-spacing: 2px;
+  letter-spacing: 3px;
+  margin-bottom: 25px;
+  display: inline-block;
+  opacity: 0.8;
 }
 
-/* Glassmorphism para el Chat */
+/* Profile Photo + Text Container */
+.profile-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  text-align: left;
+}
+
+@media (max-width: 768px) {
+  .profile-container {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+.profile-photo {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 3px solid var(--accent-color);
+  object-fit: cover;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+}
+
+.profile-text {
+  flex: 1;
+}
+
+/* FIX: Clean, Unclipped Executive Name */
+#executive-name {
+  font-size: 3.2rem;
+  letter-spacing: -1.5px;
+  margin: 0 0 10px 0;
+  line-height: 1;
+  /* Key fix to avoid vertical clipping */
+  color: var(--text-primary);
+  /* Optional: Keep a subtle gradient without animation if you like,
+     or just stick to plain white for absolute clean look. 
+     This version uses plain white for maximum legibility based on screenshot fail. */
+  background: none;
+  -webkit-text-fill-color: initial;
+}
+
+.subtitle {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  margin: 0;
+  font-weight: 400;
+  max-width: 600px;
+}
+
+/* --- Chat & Footer (Keep these as they are good) --- */
 .chat-window {
   background: var(--card-bg);
   border: 1px solid var(--border-color);
   border-radius: 16px;
   backdrop-filter: blur(10px);
-  padding: 20px;
   flex-grow: 1;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  /* Important for inner component sizing */
 }
 
-/* Footer Académico */
 .portfolio-footer {
-  margin-top: 40px;
+  margin-top: 50px;
   text-align: center;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   color: var(--text-secondary);
   border-top: 1px solid var(--border-color);
-  padding-top: 20px;
+  padding-top: 25px;
+}
+
+.footer-note {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  opacity: 0.6;
+  margin-top: 5px;
 }
