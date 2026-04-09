@@ -39,8 +39,8 @@ const ChatInterface = ({ data }) => {
             // Force stable v1 and use the '-latest' suffix to resolve mapping issues
             const genAI = new GoogleGenerativeAI(apiKey);
             const model = genAI.getGenerativeModel(
-                { model: "gemini-1.5-flash" },
-                { apiVersion: "v1" } // Esto obliga a usar el endpoint que sí existe
+                { model: "gemini-1.5-flash-latest" }, // Usa el sufijo -latest
+                { apiVersion: "v1" } // Asegura que use v1 y no v1beta
             );
 
             const prompt = `
