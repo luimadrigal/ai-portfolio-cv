@@ -1,86 +1,144 @@
-/* Global Reset */
+/* Reset global para asegurar que no haya bordes fantasmas */
 body,
 html {
     margin: 0;
     padding: 0;
     width: 100%;
-    background-color: #0d1117;
-    color: #f0f6fc;
+    background-color: #0b0e14;
+    color: #ffffff;
     overflow-x: hidden;
 }
 
-/* Main Layout Wrapper */
-.portfolio-container {
+.portfolio-wrapper {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    width: 100%;
     min-height: 100vh;
-    padding: 40px;
+    width: 100%;
+    background-color: #0b0e14;
 }
 
-/* Wide Screen Optimization (Media Query) */
-@media (min-width: 1200px) {
-    .portfolio-container {
+/* Layout de dos columnas para pantallas grandes */
+@media (min-width: 1024px) {
+    .portfolio-wrapper {
         flex-direction: row;
-        /* Shift to Side-by-Side on wide screens */
-        align-items: flex-start;
-        justify-content: center;
-        gap: 50px;
-        max-width: 1600px;
-        margin: 0 auto;
     }
 }
 
-/* Profile Section */
-.profile-sidebar {
-    flex: 1;
-    max-width: 400px;
-    text-align: center;
-    position: sticky;
-    top: 40px;
-}
-
-.profile-sidebar img {
-    width: 200px;
-    height: 200px;
-    border-radius: 20px;
-    border: 3px solid #39c5bb;
-    box-shadow: 0 0 30px rgba(57, 197, 187, 0.4);
-}
-
-/* Chat Section - Expanding for Wide Screens */
-.chat-section {
-    flex: 2;
-    width: 100%;
-    max-width: 1000px;
-    /* Increased from your current compressed view */
-    background: #161b22;
-    border-radius: 16px;
+/* Panel Izquierdo: Perfil */
+.profile-panel {
+    flex: 0 0 350px;
+    padding: 40px;
     display: flex;
     flex-direction: column;
-    height: 80vh;
-    border: 1px solid #30363d;
+    align-items: center;
+    background-color: #0b0e14;
+    border-right: 1px solid #1e232c;
+}
+
+.profile-panel img {
+    width: 180px;
+    height: 180px;
+    border-radius: 24px;
+    border: 2px solid #00f2ff;
+    box-shadow: 0 0 20px rgba(0, 242, 255, 0.2);
+    object-fit: cover;
+}
+
+.profile-info {
+    margin-top: 25px;
+    text-align: center;
+}
+
+.profile-info h1 {
+    font-size: 1.8rem;
+    margin: 0;
+    background: linear-gradient(90deg, #fff, #00f2ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.profile-info p {
+    color: #8b949e;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-top: 10px;
+}
+
+/* Panel Derecho: Chat */
+.chat-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: #0d1117;
+    height: 100vh;
 }
 
 .messages-container {
     flex: 1;
-    padding: 30px;
+    padding: 40px;
     overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
+/* Burbujas tipo Mensajería Moderna */
 .message-bubble {
-    max-width: 85%;
-    /* Use more horizontal space inside the chat */
-    padding: 16px 24px;
-    margin: 12px 0;
-    font-size: 1.1rem;
+    max-width: 80%;
+    padding: 16px 20px;
+    border-radius: 18px;
+    font-size: 1rem;
     line-height: 1.6;
 }
 
-/* Input Area Fixed to Bottom */
+.message-bubble.assistant {
+    background-color: #161b22;
+    color: #e6edf3;
+    align-self: flex-start;
+    border: 1px solid #30363d;
+}
+
+.message-bubble.user {
+    background-color: #00f2ff;
+    color: #000;
+    align-self: flex-end;
+    font-weight: 500;
+}
+
+/* Área de Input */
 .input-area {
-    padding: 20px;
-    background: #0d1117;
+    padding: 30px 40px;
+    background-color: #0d1117;
     border-top: 1px solid #30363d;
+}
+
+.input-wrapper {
+    display: flex;
+    background-color: #161b22;
+    border-radius: 12px;
+    padding: 5px;
+    border: 1px solid #30363d;
+}
+
+.input-wrapper input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: white;
+    padding: 15px;
+    font-size: 1rem;
+}
+
+.input-wrapper input:focus {
+    outline: none;
+}
+
+.input-wrapper button {
+    background-color: #00f2ff;
+    color: #000;
+    border: none;
+    padding: 0 25px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
 }
