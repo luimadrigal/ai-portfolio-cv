@@ -1,7 +1,6 @@
 /* src/App.css */
-:root {
-  --bg-color: #0b0e14;
-  --accent-color: #39c5bb;
+* {
+  box-sizing: border-box;
 }
 
 body,
@@ -11,14 +10,12 @@ html,
   padding: 0;
   width: 100vw;
   height: 100vh;
-  background-color: var(--bg-color);
+  background-color: #0b0e14;
+  font-family: 'Inter', sans-serif;
   overflow: hidden;
-  /* This prevents double scrollbars */
 }
 
-/* We remove the max-width and margin auto to allow full expansion */
 .app-container {
   width: 100%;
   height: 100%;
-  display: flex;
 }
