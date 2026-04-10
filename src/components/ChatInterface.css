@@ -1,16 +1,16 @@
-.dashboard-wrapper {
+.main-layout {
     display: flex;
     width: 100vw;
     height: 100vh;
 }
 
-.fixed-sidebar {
+.sidebar {
     width: 320px;
     background: #0d1117;
     border-right: 1px solid #30363d;
     display: flex;
     flex-direction: column;
-    padding: 40px;
+    padding: 40px 30px;
     flex-shrink: 0;
 }
 
@@ -23,53 +23,54 @@
     object-fit: cover;
 }
 
-.fixed-sidebar h2 {
+.sidebar h1 {
     font-size: 1.4rem;
     margin: 0;
     color: #fff;
     text-align: center;
 }
 
-.sidebar-subtitle {
+.sidebar-tag {
     color: #8b949e;
     text-align: center;
-    margin: 10px 0 30px;
+    margin: 10px 0;
     font-size: 0.9rem;
 }
 
-.nav-group {
+.sidebar-actions {
+    margin-top: auto;
     display: flex;
     flex-direction: column;
     gap: 10px;
-    margin-top: auto;
 }
 
-.nav-link {
+.btn {
     padding: 12px;
     border-radius: 8px;
     text-align: center;
     text-decoration: none;
     font-weight: bold;
+    font-size: 0.9rem;
 }
 
-.nav-link.main {
+.btn.primary {
     background: #39c5bb;
     color: #000;
 }
 
-.nav-link.sub {
+.btn.secondary {
     border: 1px solid #30363d;
     color: #fff;
 }
 
-.chat-viewport {
+.chat-area {
     flex: 1;
     display: flex;
     flex-direction: column;
     background: #0b0e14;
 }
 
-.chat-scroller {
+.messages-container {
     flex: 1;
     padding: 40px;
     overflow-y: auto;
@@ -78,19 +79,20 @@
     gap: 20px;
 }
 
-.msg-wrapper.user {
+.message-row.user {
     align-self: flex-end;
 }
 
-.msg-wrapper.assistant {
+.message-row.assistant {
     align-self: flex-start;
 }
 
 .bubble {
     max-width: 75%;
-    padding: 16px 20px;
+    padding: 16px 22px;
     border-radius: 12px;
     line-height: 1.6;
+    font-size: 1.05rem;
 }
 
 .user .bubble {
@@ -104,12 +106,13 @@
     color: #fff;
 }
 
-.input-bar {
-    padding: 30px;
+.input-wrapper {
+    padding: 30px 50px;
     border-top: 1px solid #30363d;
+    background: #0d1117;
 }
 
-.pill {
+.input-pill {
     display: flex;
     background: #161b22;
     border-radius: 50px;
@@ -117,16 +120,16 @@
     border: 1px solid #30363d;
 }
 
-.pill input {
+.input-pill input {
     flex: 1;
     background: transparent;
     border: none;
     color: #fff;
-    padding: 10px;
+    padding: 12px;
     outline: none;
 }
 
-.pill button {
+.input-pill button {
     background: none;
     border: none;
     color: #39c5bb;
