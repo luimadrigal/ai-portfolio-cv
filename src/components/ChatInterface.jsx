@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './ChatInterface.css';
+import profileImg from '../assets/profile.jpg';
 
-const ChatInterface = ({ data }) => {
+const ChatInterface = ({ data, pdfPath }) => {
     const apiKey = import.meta.env.VITE_GROQ_API_KEY;
     const [messages, setMessages] = useState([{
         role: 'assistant',
-        content: "Hello! I am Luis's executive AI assistant. How can I help you today?"
+        content: `Hello! I am ${data?.personal_info?.name || "Luis"}'s AI assistant. I can discuss his extensive background in Engineering Leadership or Big Data expertise. How can I help?`
     }]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -17,10 +18,8 @@ const ChatInterface = ({ data }) => {
 
     const handleSend = async () => {
         if (!input.trim() || isLoading) return;
-
         setIsLoading(true);
-        const userMsg = { role: 'user', content: input };
-        setMessages(prev => [...prev, userMsg]);
+        setMessages(prev => [...prev, { role: 'user', content: input }]);
         setInput('');
 
         try {
@@ -35,47 +34,73 @@ const ChatInterface = ({ data }) => {
                     ]
                 })
             });
-
-            if (!response.ok) throw new Error("API_ERROR");
-
+            if (!response.ok) throw new Error("API Error");
             const result = await response.json();
             setMessages(prev => [...prev, { role: 'assistant', content: result.choices[0].message.content }]);
         } catch (error) {
-            setMessages(prev => [...prev, { role: 'assistant', content: "Connection error. Please try again later." }]);
+            setMessages(prev => [...prev, { role: 'assistant', content: "Connection issue. Please try again later." }]);
         } finally {
-            // Este bloque asegura que el looping se detenga siempre
             setIsLoading(false);
         }
     };
 
     return (
-        <div className="main-viewport">
-            <aside className="side-panel">
-                <div className="id-card">
-                    <img src="/profile.png" alt="Luis" className="pfp" />
-                    <h1>Luis Madrigal Lobo</h1>
-                    <p>Engineering Director | AI & Big Data</p>
+        <div className="chat-layout">
+            <aside className="chat-sidebar glass">
+                <div className="profile-section">
+                    <img src={profileImg} alt={data?.personal_info?.name || "Luis"} className="profile-avatar" />
+                    <h1>{data?.personal_info?.name || "Luis Madrigal Lobo"}</h1>
+                    <h2 className="profile-role">{data?.personal_info?.title || "Engineering Director | AI & Big Data"}</h2>
+                    {data?.education_certs?.[0] && (
+                        <p className="profile-education">{data.education_certs[0]}</p>
+                    )}
                 </div>
-                <div className="nav-stack">
-                    <a href="/CV_Luis_Madrigal.pdf" target="_blank" className="nav-link primary">View CV</a>
-                    <a href="/CV_Luis_Madrigal.pdf" download className="nav-link secondary">Download PDF</a>
+                
+                <div className="nav-actions">
+                    <a href={pdfPath} target="_blank" rel="noopener noreferrer" className="btn btn-primary">
+                        View Full CV
+                    </a>
+                    <a href={pdfPath} download="CV_Luis_Madrigal_Lobo.pdf" className="btn btn-outline">
+                        Download PDF
+                    </a>
+                </div>
+                
+                <div className="sidebar-footer">
+                    <p>Built with React + Vite + AI</p>
                 </div>
             </aside>
 
-            <main className="chat-canvas">
-                <div className="chat-stream">
+            <main className="chat-main">
+                <div className="message-list">
                     {messages.map((m, i) => (
-                        <div key={i} className={`chat-row ${m.role}`}>
-                            <div className="bubble">{m.content}</div>
+                        <div key={i} className={`message-row ${m.role}`}>
+                            <div className="message-bubble">{m.content}</div>
                         </div>
                     ))}
-                    {isLoading && <div className="chat-row assistant"><div className="bubble">Thinking...</div></div>}
+                    {isLoading && (
+                        <div className="message-row assistant">
+                            <div className="message-bubble typing-indicator">
+                                <span></span><span></span><span></span>
+                            </div>
+                        </div>
+                    )}
                     <div ref={chatEndRef} />
                 </div>
-                <div className="input-footer">
-                    <div className="input-bar">
-                        <input value={input} onChange={e => setInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleSend()} placeholder="Ask me anything..." />
-                        <button onClick={handleSend} disabled={isLoading}>Send</button>
+                
+                <div className="input-area glass">
+                    <div className="input-pill">
+                        <input 
+                            value={input} 
+                            onChange={e => setInput(e.target.value)} 
+                            onKeyDown={e => e.key === 'Enter' && handleSend()} 
+                            placeholder="Ask me about Luis's experience..." 
+                        />
+                        <button onClick={handleSend} disabled={isLoading} className="send-btn">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <line x1="22" y1="2" x2="11" y2="13"></line>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                            </svg>
+                        </button>
                     </div>
                 </div>
             </main>
