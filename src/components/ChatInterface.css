@@ -1,8 +1,8 @@
 /* src/components/ChatInterface.css */
 .chat-layout {
     display: flex;
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    height: 100dvh;
 }
 
 .chat-sidebar {
@@ -278,23 +278,25 @@
     }
     .chat-sidebar {
         width: 100%;
-        padding: 20px;
+        padding: 16px 20px;
         border-right: none;
         border-bottom: 1px solid var(--border);
-        flex-direction: row;
-        align-items: center;
-        flex-wrap: wrap;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
         backdrop-filter: blur(12px);
     }
     .profile-section {
         flex-direction: row;
         text-align: left;
         margin-bottom: 0;
-        gap: 16px;
+        gap: 12px;
+        justify-content: flex-start;
+        align-items: center;
     }
     .profile-avatar {
-        width: 54px;
-        height: 54px;
+        width: 44px;
+        height: 44px;
         margin-bottom: 0;
         border-width: 2px;
     }
@@ -304,14 +306,16 @@
     .profile-section h1 {
         font-size: 1.1rem;
         margin: 0;
+        line-height: 1.2;
     }
     .nav-actions {
         flex-direction: row;
         margin-top: 0;
-        margin-left: auto;
+        gap: 8px;
     }
     .btn {
-        padding: 8px 12px;
+        flex: 1; /* Make buttons expand equally */
+        padding: 10px 8px;
         font-size: 0.8rem;
     }
     .input-area {
