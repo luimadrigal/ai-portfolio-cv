@@ -17,8 +17,10 @@ const ChatInterface = ({ data }) => {
 
     const handleSend = async () => {
         if (!input.trim() || isLoading) return;
+
         setIsLoading(true);
-        setMessages(prev => [...prev, { role: 'user', content: input }]);
+        const userMsg = { role: 'user', content: input };
+        setMessages(prev => [...prev, userMsg]);
         setInput('');
 
         try {
@@ -28,48 +30,51 @@ const ChatInterface = ({ data }) => {
                 body: JSON.stringify({
                     model: "llama-3.3-70b-versatile",
                     messages: [
-                        { role: "system", content: "You are the professional assistant for Luis Madrigal Lobo. Answer in English. Be executive." },
+                        { role: "system", content: "You are the professional assistant for Luis Madrigal Lobo. Answer in English only." },
                         { role: "user", content: input }
                     ]
                 })
             });
+
+            if (!response.ok) throw new Error("API_ERROR");
+
             const result = await response.json();
             setMessages(prev => [...prev, { role: 'assistant', content: result.choices[0].message.content }]);
         } catch (error) {
-            setMessages(prev => [...prev, { role: 'assistant', content: "Connection error. Please try again." }]);
+            setMessages(prev => [...prev, { role: 'assistant', content: "Connection error. Please try again later." }]);
         } finally {
+            // Este bloque asegura que el looping se detenga siempre
             setIsLoading(false);
         }
     };
 
     return (
-        <div className="platform-shell">
-            <aside className="platform-sidebar">
-                <div className="sidebar-identity">
-                    <img src="/profile.png" alt="Luis" className="avatar-main" />
+        <div className="main-viewport">
+            <aside className="side-panel">
+                <div className="id-card">
+                    <img src="/profile.png" alt="Luis" className="pfp" />
                     <h1>Luis Madrigal Lobo</h1>
                     <p>Engineering Director | AI & Big Data</p>
                 </div>
-
-                <div className="sidebar-nav">
-                    <a href="/CV_Luis_Madrigal.pdf" target="_blank" className="nav-item highlight">View CV</a>
-                    <a href="/CV_Luis_Madrigal.pdf" download className="nav-item">Download PDF</a>
+                <div className="nav-stack">
+                    <a href="/CV_Luis_Madrigal.pdf" target="_blank" className="nav-link primary">View CV</a>
+                    <a href="/CV_Luis_Madrigal.pdf" download className="nav-link secondary">Download PDF</a>
                 </div>
             </aside>
 
-            <main className="platform-chat">
-                <div className="chat-window-flow">
+            <main className="chat-canvas">
+                <div className="chat-stream">
                     {messages.map((m, i) => (
-                        <div key={i} className={`chat-line ${m.role}`}>
-                            <div className="chat-bubble">{m.content}</div>
+                        <div key={i} className={`chat-row ${m.role}`}>
+                            <div className="bubble">{m.content}</div>
                         </div>
                     ))}
-                    {isLoading && <div className="chat-line assistant"><div className="chat-bubble">Typing...</div></div>}
+                    {isLoading && <div className="chat-row assistant"><div className="bubble">Thinking...</div></div>}
                     <div ref={chatEndRef} />
                 </div>
-                <div className="chat-input-container">
-                    <div className="chat-input-pill">
-                        <input value={input} onChange={e => setInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleSend()} placeholder="Ask me about Luis's experience..." />
+                <div className="input-footer">
+                    <div className="input-bar">
+                        <input value={input} onChange={e => setInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleSend()} placeholder="Ask me anything..." />
                         <button onClick={handleSend} disabled={isLoading}>Send</button>
                     </div>
                 </div>

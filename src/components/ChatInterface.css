@@ -1,12 +1,11 @@
-/* src/components/ChatInterface.css */
-.platform-shell {
+.main-viewport {
     display: flex;
     width: 100vw;
     height: 100vh;
     background: #0b0e14;
 }
 
-.platform-sidebar {
+.side-panel {
     width: 320px;
     background: #0d1117;
     border-right: 1px solid #30363d;
@@ -16,58 +15,61 @@
     flex-shrink: 0;
 }
 
-.avatar-main {
+.pfp {
     width: 100%;
     aspect-ratio: 1/1;
-    border-radius: 12px;
+    border-radius: 15px;
     border: 2px solid #39c5bb;
     margin-bottom: 20px;
     object-fit: cover;
 }
 
-.sidebar-identity h1 {
+.id-card h1 {
     font-size: 1.4rem;
     color: #fff;
     text-align: center;
 }
 
-.sidebar-identity p {
+.id-card p {
     color: #39c5bb;
     text-align: center;
     font-size: 0.9rem;
     margin-top: 5px;
+    font-weight: 600;
 }
 
-.sidebar-nav {
+.nav-stack {
     margin-top: auto;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
 }
 
-.nav-item {
-    padding: 12px;
-    border-radius: 8px;
+.nav-link {
+    padding: 14px;
+    border-radius: 10px;
     text-align: center;
     text-decoration: none;
     font-weight: bold;
-    color: #fff;
-    border: 1px solid #30363d;
 }
 
-.nav-item.highlight {
+.nav-link.primary {
     background: #39c5bb;
     color: #000;
-    border: none;
 }
 
-.platform-chat {
+.nav-link.secondary {
+    border: 1px solid #30363d;
+    color: #fff;
+}
+
+.chat-canvas {
     flex: 1;
     display: flex;
     flex-direction: column;
 }
 
-.chat-window-flow {
+.chat-stream {
     flex: 1;
     padding: 40px;
     overflow-y: auto;
@@ -76,39 +78,40 @@
     gap: 20px;
 }
 
-.chat-line.user {
+.chat-row.user {
     align-self: flex-end;
 }
 
-.chat-line.assistant {
+.chat-row.assistant {
     align-self: flex-start;
 }
 
-.chat-bubble {
+.bubble {
     max-width: 75%;
-    padding: 16px 20px;
-    border-radius: 12px;
+    padding: 16px 22px;
+    border-radius: 15px;
     line-height: 1.6;
+    font-size: 1.1rem;
 }
 
-.user .chat-bubble {
+.user .bubble {
     background: #39c5bb;
     color: #000;
 }
 
-.assistant .chat-bubble {
+.assistant .bubble {
     background: #161b22;
     border: 1px solid #30363d;
     color: #fff;
 }
 
-.chat-input-container {
+.input-footer {
     padding: 30px 50px;
     background: #0d1117;
     border-top: 1px solid #30363d;
 }
 
-.chat-input-pill {
+.input-bar {
     display: flex;
     background: #161b22;
     border-radius: 50px;
@@ -116,16 +119,16 @@
     border: 1px solid #30363d;
 }
 
-.chat-input-pill input {
+.input-bar input {
     flex: 1;
     background: transparent;
     border: none;
     color: #fff;
-    padding: 10px;
+    padding: 12px;
     outline: none;
 }
 
-.chat-input-pill button {
+.input-bar button {
     background: none;
     border: none;
     color: #39c5bb;
