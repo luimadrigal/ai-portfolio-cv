@@ -156,6 +156,33 @@
     position: relative;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     animation: fadeIn 0.3s ease forwards;
+    word-break: break-word;
+}
+
+/* Markdown specific styles */
+.message-bubble p {
+    margin: 0 0 12px 0;
+}
+
+.message-bubble p:last-child {
+    margin-bottom: 0;
+}
+
+.message-bubble ul, .message-bubble ol {
+    margin: 8px 0 8px 24px;
+    padding: 0;
+}
+
+.message-bubble li {
+    margin-bottom: 6px;
+}
+
+.message-bubble li:last-child {
+    margin-bottom: 0;
+}
+
+.message-bubble strong {
+    font-weight: 700;
 }
 
 @keyframes fadeIn {

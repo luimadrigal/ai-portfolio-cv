@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
 import './ChatInterface.css';
 import profileImg from '../assets/profile.jpg';
 
@@ -79,7 +80,9 @@ const ChatInterface = ({ data, pdfPath }) => {
                 <div className="message-list">
                     {messages.map((m, i) => (
                         <div key={i} className={`message-row ${m.role}`}>
-                            <div className="message-bubble">{m.content}</div>
+                            <div className="message-bubble markdown-body">
+                                <ReactMarkdown>{m.content}</ReactMarkdown>
+                            </div>
                         </div>
                     ))}
                     {isLoading && (
