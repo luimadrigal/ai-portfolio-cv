@@ -4,10 +4,11 @@ import profileImg from '../assets/profile.jpg';
 
 const ChatInterface = ({ data, pdfPath }) => {
     const apiKey = import.meta.env.VITE_GROQ_API_KEY;
-    const [messages, setMessages] = useState([{
+    const defaultMessage = {
         role: 'assistant',
         content: `Hello! I am ${data?.personal_info?.name || "Luis"}'s AI assistant. I can discuss his extensive background in Engineering Leadership or Big Data expertise. How can I help?`
-    }]);
+    };
+    const [messages, setMessages] = useState([defaultMessage]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const chatEndRef = useRef(null);
@@ -42,6 +43,10 @@ const ChatInterface = ({ data, pdfPath }) => {
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const handleClear = () => {
+        setMessages([defaultMessage]);
     };
 
     return (
@@ -95,7 +100,13 @@ const ChatInterface = ({ data, pdfPath }) => {
                             onKeyDown={e => e.key === 'Enter' && handleSend()} 
                             placeholder="Ask me about Luis's experience..." 
                         />
-                        <button onClick={handleSend} disabled={isLoading} className="send-btn">
+                        <button onClick={handleClear} disabled={isLoading} className="clear-btn" title="Clear chat">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M21 2v6h-6"></path>
+                                <path d="M3 12a9 9 0 1 0 2.63-6.37L21 8"></path>
+                            </svg>
+                        </button>
+                        <button onClick={handleSend} disabled={isLoading} className="send-btn" title="Send message">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <line x1="22" y1="2" x2="11" y2="13"></line>
                                 <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
