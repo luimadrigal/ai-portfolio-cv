@@ -1,4 +1,6 @@
 /* src/components/ChatInterface.css */
+@import './ChatInterface_extra.css';
+
 .chat-layout {
     display: flex;
     width: 100%;
