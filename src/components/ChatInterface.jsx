@@ -2,35 +2,40 @@ import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import './ChatInterface.css';
 import profileImg from '../assets/profile.jpg';
+import AnalyticsDashboard from './AnalyticsDashboard';
 
 const UI_STRINGS = {
     en: {
         defaultMsg: "Hello! I am {name}'s AI assistant. I can discuss his extensive background in Engineering Leadership or Big Data expertise. How can I help?",
-        systemPrompt: "You are the professional assistant for Luis Madrigal Lobo. Answer in English only.",
         connError: "Connection issue. Please try again later.",
         voiceOn: "🔊 Voice On",
         voiceOff: "🔈 Voice Off",
         viewCV: "View Full CV",
         downloadPDF: "Download PDF",
+        viewAnalytics: "📊 View Analytics",
         builtWith: "Built with React + Vite + AI",
         listening: "Listening...",
         placeholder: "Ask me about Luis's experience...",
         micError: "Microphone capture failed. Please ensure permissions are granted.",
-        transcriptionError: "Sorry, there was an issue understanding the microphone audio."
+        transcriptionError: "Sorry, there was an issue understanding the microphone audio.",
+        modes: { general: "General", bigdata: "Big Data", leadership: "Leadership" },
+        chips: ["Tell me about your Azure migrations", "What is your Spark experience?", "Summarize your management skills"]
     },
     es: {
         defaultMsg: "¡Hola! Soy el asistente de IA de {name}. Puedo hablar sobre su amplia experiencia en Liderazgo de Ingeniería o su conocimiento en Big Data. ¿Cómo puedo ayudarte?",
-        systemPrompt: "You are the professional assistant for Luis Madrigal Lobo. Answer in Spanish only.",
         connError: "Problema de conexión. Por favor intenta más tarde.",
         voiceOn: "🔊 Voz Activada",
         voiceOff: "🔈 Voz Desact.",
         viewCV: "Ver CV Completo",
         downloadPDF: "Descargar PDF",
+        viewAnalytics: "📊 Ver Analíticas",
         builtWith: "Construido con React + Vite + AI",
         listening: "Escuchando...",
         placeholder: "Pregúntame sobre la experiencia de Luis...",
         micError: "Falló la captura del micrófono. Por favor asegura los permisos.",
-        transcriptionError: "Lo siento, hubo un problema entendiendo el audio del micrófono."
+        transcriptionError: "Lo siento, hubo un problema entendiendo el audio del micrófono.",
+        modes: { general: "General", bigdata: "Big Data", leadership: "Liderazgo" },
+        chips: ["Háblame de tus migraciones a Azure", "¿Cuál es tu experiencia con Spark?", "Resumen de tus habilidades directivas"]
     }
 };
 
@@ -38,9 +43,15 @@ const ChatInterface = ({ data, pdfPath, lang = 'en', setLang }) => {
     const apiKey = import.meta.env.VITE_GROQ_API_KEY;
     const strings = UI_STRINGS[lang] || UI_STRINGS.en;
     
+    // New States
+    const [chatMode, setChatMode] = useState('general');
+    const [showAnalytics, setShowAnalytics] = useState(false);
+
     const defaultMessage = {
+        id: Date.now().toString(),
         role: 'assistant',
-        content: strings.defaultMsg.replace('{name}', data?.personal_info?.name || "Luis")
+        content: strings.defaultMsg.replace('{name}', data?.personal_info?.name || "Luis"),
+        rating: null // 'up', 'down', or null
     };
     
     const [messages, setMessages] = useState([defaultMessage]);
@@ -61,27 +72,45 @@ const ChatInterface = ({ data, pdfPath, lang = 'en', setLang }) => {
     // Reset chat when language changes
     useEffect(() => {
         setMessages([{
+            id: Date.now().toString(),
             role: 'assistant',
-            content: strings.defaultMsg.replace('{name}', data?.personal_info?.name || "Luis")
+            content: strings.defaultMsg.replace('{name}', data?.personal_info?.name || "Luis"),
+            rating: null
         }]);
     }, [lang]);
+
+    const getSystemPrompt = () => {
+        const base = lang === 'en' 
+            ? "You are the professional assistant for Luis Madrigal Lobo. Answer in English only." 
+            : "You are the professional assistant for Luis Madrigal Lobo. Answer in Spanish only.";
+        const modeInstruction = chatMode === 'bigdata' 
+            ? " Focus heavily on technical architectures, Big Data, Spark, Azure, AWS and software patterns." 
+            : chatMode === 'leadership' 
+                ? " Focus heavily on team management, agile practices, organizational scale, and leadership style." 
+                : "";
+        const contextStr = JSON.stringify(data);
+        return `${base}${modeInstruction}\n\nHere is the detailed CV context to use when answering queries:\n${contextStr}`;
+    };
 
     const handleSend = async (textToSend = input) => {
         const query = typeof textToSend === 'string' ? textToSend : input;
         if (!query.trim() || isLoading) return;
         
         setIsLoading(true);
-        setMessages(prev => [...prev, { role: 'user', content: query }]);
+        setMessages(prev => [...prev, { id: Date.now().toString(), role: 'user', content: query }]);
         if (query === input) setInput('');
 
         try {
+            // Include conversation history
+            const contextMessages = messages.map(m => ({ role: m.role, content: m.content }));
             const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
                 method: "POST",
                 headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
                 body: JSON.stringify({
                     model: "llama-3.3-70b-versatile",
                     messages: [
-                        { role: "system", content: strings.systemPrompt },
+                        { role: "system", content: getSystemPrompt() },
+                        ...contextMessages,
                         { role: "user", content: query }
                     ]
                 })
@@ -90,7 +119,12 @@ const ChatInterface = ({ data, pdfPath, lang = 'en', setLang }) => {
             const result = await response.json();
             const aiText = result.choices[0].message.content;
             
-            setMessages(prev => [...prev, { role: 'assistant', content: aiText }]);
+            setMessages(prev => [...prev, { 
+                id: (Date.now() + 1).toString(),
+                role: 'assistant', 
+                content: aiText,
+                rating: null 
+            }]);
             
             // Native Browser Text-to-Speech
             if (isVoiceEnabled && window.speechSynthesis) {
@@ -110,7 +144,7 @@ const ChatInterface = ({ data, pdfPath, lang = 'en', setLang }) => {
                 window.speechSynthesis.speak(utterance);
             }
         } catch (error) {
-            setMessages(prev => [...prev, { role: 'assistant', content: strings.connError }]);
+            setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', content: strings.connError, rating: null }]);
         } finally {
             setIsLoading(false);
         }
@@ -144,7 +178,7 @@ const ChatInterface = ({ data, pdfPath, lang = 'en', setLang }) => {
                 const formData = new FormData();
                 formData.append("file", audioFile);
                 formData.append("model", "whisper-large-v3-turbo");
-                formData.append("language", lang); // tell whisper which language
+                formData.append("language", lang);
 
                 let transcribedText = "";
                 try {
@@ -164,7 +198,6 @@ const ChatInterface = ({ data, pdfPath, lang = 'en', setLang }) => {
                 stream.getTracks().forEach(track => track.stop());
                 setIsLoading(false);
 
-                // Auto-send transcribed text if valid
                 if (transcribedText && transcribedText.trim().length > 0) {
                     handleSend(transcribedText);
                 }
@@ -180,14 +213,22 @@ const ChatInterface = ({ data, pdfPath, lang = 'en', setLang }) => {
 
     const handleClear = () => {
         setMessages([{
+            id: Date.now().toString(),
             role: 'assistant',
-            content: strings.defaultMsg.replace('{name}', data?.personal_info?.name || "Luis")
+            content: strings.defaultMsg.replace('{name}', data?.personal_info?.name || "Luis"),
+            rating: null
         }]);
         if (window.speechSynthesis) window.speechSynthesis.cancel();
     };
     
     const toggleLanguage = () => {
         setLang(lang === 'en' ? 'es' : 'en');
+    };
+
+    const handleRate = (id, ratingType) => {
+        setMessages(prev => prev.map(m => m.id === id ? { ...m, rating: ratingType } : m));
+        // Demonstrates data capture capability without full backend
+        console.log(`Analytics Event: Message ${id} rated ${ratingType}`);
     };
 
     return (
@@ -205,6 +246,9 @@ const ChatInterface = ({ data, pdfPath, lang = 'en', setLang }) => {
                 <div className="nav-actions">
                     <button onClick={toggleLanguage} className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                         🌐 {lang === 'en' ? 'Español' : 'English'}
+                    </button>
+                    <button onClick={() => setShowAnalytics(true)} className="btn btn-outline">
+                        {strings.viewAnalytics}
                     </button>
                     <button 
                         onClick={() => setIsVoiceEnabled(!isVoiceEnabled)} 
@@ -226,11 +270,33 @@ const ChatInterface = ({ data, pdfPath, lang = 'en', setLang }) => {
             </aside>
 
             <main className="chat-main">
+                <div className="chat-header">
+                    <div className="modes-tabs">
+                        <button className={`mode-tab ${chatMode === 'general' ? 'active' : ''}`} onClick={() => setChatMode('general')}>
+                           {strings.modes.general}
+                        </button>
+                        <button className={`mode-tab ${chatMode === 'bigdata' ? 'active' : ''}`} onClick={() => setChatMode('bigdata')}>
+                           🚀 {strings.modes.bigdata}
+                        </button>
+                        <button className={`mode-tab ${chatMode === 'leadership' ? 'active' : ''}`} onClick={() => setChatMode('leadership')}>
+                           👥 {strings.modes.leadership}
+                        </button>
+                    </div>
+                </div>
+
                 <div className="message-list">
                     {messages.map((m, i) => (
-                        <div key={i} className={`message-row ${m.role}`}>
-                            <div className="message-bubble markdown-body">
-                                <ReactMarkdown>{m.content}</ReactMarkdown>
+                        <div key={m.id} className={`message-row ${m.role}`}>
+                            <div className="message-container">
+                                <div className="message-bubble markdown-body">
+                                    <ReactMarkdown>{m.content}</ReactMarkdown>
+                                </div>
+                                {m.role === 'assistant' && (
+                                    <div className="rating-actions">
+                                        <button onClick={() => handleRate(m.id, 'up')} className={`rate-btn ${m.rating === 'up' ? 'active' : ''}`} title="Helpful">👍</button>
+                                        <button onClick={() => handleRate(m.id, 'down')} className={`rate-btn ${m.rating === 'down' ? 'active' : ''}`} title="Not helpful">👎</button>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     ))}
@@ -245,6 +311,15 @@ const ChatInterface = ({ data, pdfPath, lang = 'en', setLang }) => {
                 </div>
                 
                 <div className="input-area glass">
+                    {messages.length === 1 && (
+                        <div className="suggestion-chips">
+                            {strings.chips.map((chip, idx) => (
+                                <button key={idx} className="chip-btn" onClick={() => handleSend(chip)}>
+                                    {chip}
+                                </button>
+                            ))}
+                        </div>
+                    )}
                     <div className="input-pill">
                         <input 
                             value={input} 
@@ -276,6 +351,8 @@ const ChatInterface = ({ data, pdfPath, lang = 'en', setLang }) => {
                     </div>
                 </div>
             </main>
+            
+            {showAnalytics && <AnalyticsDashboard lang={lang} onClose={() => setShowAnalytics(false)} />}
         </div>
     );
 };
