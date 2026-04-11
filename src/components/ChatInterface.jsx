@@ -7,7 +7,11 @@ import AnalyticsDashboard from './AnalyticsDashboard';
 
 const UI_STRINGS = {
     en: {
-        defaultMsg: "Hello! I am {name}'s AI assistant. I can discuss his extensive background in Engineering Leadership or Big Data expertise. How can I help?",
+        defaultMsg: {
+            general: "Hello! I am {name}'s AI assistant. I can discuss his extensive background in Engineering Leadership or Big Data expertise. How can I help?",
+            bigdata: "Switching to Big Data & AI context. Ask me about {name}'s cloud architecture, Spark pipelines, and data engineering expertise!",
+            leadership: "Switching to Leadership context. Ask me about how {name} manages global teams, agile practices, and scales organizations!"
+        },
         connError: "Connection issue. Please try again later.",
         voiceOn: "🔊 Voice On",
         voiceOff: "🔈 Voice Off",
@@ -20,15 +24,31 @@ const UI_STRINGS = {
         micError: "Microphone capture failed. Please ensure permissions are granted.",
         transcriptionError: "Sorry, there was an issue understanding the microphone audio.",
         modes: { general: "General", bigdata: "Big Data", leadership: "Leadership" },
-        chips: [
-            "How do you apply Big Data to business optimization?", 
-            "Tell me about your role leading AI transformation.", 
-            "What has been your career trajectory?"
-        ],
+        chips: {
+            general: [
+                "How do you apply Big Data to business optimization?", 
+                "Tell me about your role leading AI transformation.", 
+                "What has been your career trajectory?"
+            ],
+            bigdata: [
+                "What's your experience with Databricks and Spark?",
+                "How do you build scalable data architectures?",
+                "Tell me about a complex data problem you solved."
+            ],
+            leadership: [
+                "How do you manage distributed global teams?",
+                "What metrics do you use to measure engineering success?",
+                "What is your leadership philosophy?"
+            ]
+        },
         available: "Open to strategic challenges"
     },
     es: {
-        defaultMsg: "¡Hola! Soy el asistente de IA de {name}. Puedo hablar sobre su amplia experiencia en Liderazgo de Ingeniería o su conocimiento en Big Data. ¿Cómo puedo ayudarte?",
+        defaultMsg: {
+            general: "¡Hola! Soy el asistente de IA de {name}. Puedo hablar sobre su amplia experiencia en Liderazgo de Ingeniería o su conocimiento en Big Data. ¿Cómo puedo ayudarte?",
+            bigdata: "Cambiando al modo Big Data & AI. ¡Pregúntame sobre la experiencia de {name} en arquitectura cloud, pipelines en Spark e ingeniería de datos!",
+            leadership: "Cambiando al modo Liderazgo. ¡Pregúntame sobre cómo {name} gestiona equipos globales, prácticas ágiles y escala organizaciones!"
+        },
         connError: "Problema de conexión. Por favor intenta más tarde.",
         voiceOn: "🔊 Voz Activada",
         voiceOff: "🔈 Voz Desact.",
@@ -41,11 +61,23 @@ const UI_STRINGS = {
         micError: "Falló la captura del micrófono. Por favor asegura los permisos.",
         transcriptionError: "Lo siento, hubo un problema entendiendo el audio del micrófono.",
         modes: { general: "General", bigdata: "Big Data", leadership: "Liderazgo" },
-        chips: [
-            "¿Cómo aplicas Big Data para optimizar negocios?", 
-            "Háblame de tu rol liderando transformación IA.", 
-            "¿Cuál ha sido tu trayectoria?"
-        ],
+        chips: {
+            general: [
+                "¿Cómo aplicas Big Data para optimizar negocios?", 
+                "Háblame de tu rol liderando transformación IA.", 
+                "¿Cuál ha sido tu trayectoria?"
+            ],
+            bigdata: [
+                "¿Cuál es tu experiencia con Databricks y Spark?",
+                "¿Cómo construyes arquitecturas escalables?",
+                "Háblame de un reto complejo de datos resuelto."
+            ],
+            leadership: [
+                "¿Cómo gestionas equipos globales distribuidos?",
+                "¿Qué métricas usas para medir el éxito?",
+                "¿Cuál es tu filosofía de liderazgo?"
+            ]
+        },
         available: "Disponible para consultoría"
     }
 };
@@ -143,7 +175,7 @@ const ChatInterface = ({ data, pdfPath, lang = 'en', setLang }) => {
     const defaultMessage = {
         id: Date.now().toString(),
         role: 'assistant',
-        content: strings.defaultMsg.replace('{name}', data?.personal_info?.name || "Luis"),
+        content: strings.defaultMsg[chatMode].replace('{name}', data?.personal_info?.name || "Luis"),
         rating: null
     };
     
@@ -168,10 +200,10 @@ const ChatInterface = ({ data, pdfPath, lang = 'en', setLang }) => {
         setMessages([{
             id: Date.now().toString(),
             role: 'assistant',
-            content: strings.defaultMsg.replace('{name}', data?.personal_info?.name || "Luis"),
+            content: strings.defaultMsg[chatMode].replace('{name}', data?.personal_info?.name || "Luis"),
             rating: null
         }]);
-    }, [lang]);
+    }, [lang, chatMode]);
 
     const getSystemPrompt = () => {
         const base = lang === 'en' 
@@ -354,7 +386,7 @@ If asked about your career trajectory or timeline, respond with a short introduc
         setMessages([{
             id: Date.now().toString(),
             role: 'assistant',
-            content: strings.defaultMsg.replace('{name}', data?.personal_info?.name || "Luis"),
+            content: strings.defaultMsg[chatMode].replace('{name}', data?.personal_info?.name || "Luis"),
             rating: null
         }]);
         if (window.speechSynthesis) window.speechSynthesis.cancel();
@@ -457,7 +489,7 @@ If asked about your career trajectory or timeline, respond with a short introduc
                 <div className="input-area glass">
                     {messages.length === 1 && (
                         <div className="suggestion-chips">
-                            {strings.chips.map((chip, idx) => (
+                            {strings.chips[chatMode].map((chip, idx) => (
                                 <button key={idx} className="chip-btn" onClick={() => handleSend(chip)}>
                                     {chip}
                                 </button>
