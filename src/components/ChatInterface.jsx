@@ -3,11 +3,44 @@ import ReactMarkdown from 'react-markdown';
 import './ChatInterface.css';
 import profileImg from '../assets/profile.jpg';
 
-const ChatInterface = ({ data, pdfPath }) => {
+const UI_STRINGS = {
+    en: {
+        defaultMsg: "Hello! I am {name}'s AI assistant. I can discuss his extensive background in Engineering Leadership or Big Data expertise. How can I help?",
+        systemPrompt: "You are the professional assistant for Luis Madrigal Lobo. Answer in English only.",
+        connError: "Connection issue. Please try again later.",
+        voiceOn: "🔊 Voice On",
+        voiceOff: "🔈 Voice Off",
+        viewCV: "View Full CV",
+        downloadPDF: "Download PDF",
+        builtWith: "Built with React + Vite + AI",
+        listening: "Listening...",
+        placeholder: "Ask me about Luis's experience...",
+        micError: "Microphone capture failed. Please ensure permissions are granted.",
+        transcriptionError: "Sorry, there was an issue understanding the microphone audio."
+    },
+    es: {
+        defaultMsg: "¡Hola! Soy el asistente de IA de {name}. Puedo hablar sobre su amplia experiencia en Liderazgo de Ingeniería o su conocimiento en Big Data. ¿Cómo puedo ayudarte?",
+        systemPrompt: "You are the professional assistant for Luis Madrigal Lobo. Answer in Spanish only.",
+        connError: "Problema de conexión. Por favor intenta más tarde.",
+        voiceOn: "🔊 Voz Activada",
+        voiceOff: "🔈 Voz Desact.",
+        viewCV: "Ver CV Completo",
+        downloadPDF: "Descargar PDF",
+        builtWith: "Construido con React + Vite + AI",
+        listening: "Escuchando...",
+        placeholder: "Pregúntame sobre la experiencia de Luis...",
+        micError: "Falló la captura del micrófono. Por favor asegura los permisos.",
+        transcriptionError: "Lo siento, hubo un problema entendiendo el audio del micrófono."
+    }
+};
+
+const ChatInterface = ({ data, pdfPath, lang = 'en', setLang }) => {
     const apiKey = import.meta.env.VITE_GROQ_API_KEY;
+    const strings = UI_STRINGS[lang] || UI_STRINGS.en;
+    
     const defaultMessage = {
         role: 'assistant',
-        content: `Hello! I am ${data?.personal_info?.name || "Luis"}'s AI assistant. I can discuss his extensive background in Engineering Leadership or Big Data expertise. How can I help?`
+        content: strings.defaultMsg.replace('{name}', data?.personal_info?.name || "Luis")
     };
     
     const [messages, setMessages] = useState([defaultMessage]);
@@ -24,6 +57,14 @@ const ChatInterface = ({ data, pdfPath }) => {
     useEffect(() => {
         chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
+    
+    // Reset chat when language changes
+    useEffect(() => {
+        setMessages([{
+            role: 'assistant',
+            content: strings.defaultMsg.replace('{name}', data?.personal_info?.name || "Luis")
+        }]);
+    }, [lang]);
 
     const handleSend = async (textToSend = input) => {
         const query = typeof textToSend === 'string' ? textToSend : input;
@@ -40,7 +81,7 @@ const ChatInterface = ({ data, pdfPath }) => {
                 body: JSON.stringify({
                     model: "llama-3.3-70b-versatile",
                     messages: [
-                        { role: "system", content: "You are the professional assistant for Luis Madrigal Lobo. Answer in English only." },
+                        { role: "system", content: strings.systemPrompt },
                         { role: "user", content: query }
                     ]
                 })
@@ -57,19 +98,19 @@ const ChatInterface = ({ data, pdfPath }) => {
                 // strip markdown formatting characters for cleaner audio reading
                 const cleanText = aiText.replace(/[*#`]/g, '');
                 const utterance = new SpeechSynthesisUtterance(cleanText);
-                utterance.lang = 'en-US';
+                utterance.lang = lang === 'es' ? 'es-ES' : 'en-US';
                 
-                // Try to find a premium/natural English voice if available
+                // Try to find a premium/natural expected voice if available
                 const voices = window.speechSynthesis.getVoices();
-                const englishVoices = voices.filter(v => v.lang.startsWith('en'));
-                if (englishVoices.length > 0) {
-                    const premiumVoice = englishVoices.find(v => v.name.toLowerCase().includes('premium') || v.name.toLowerCase().includes('google') || v.name.toLowerCase().includes('siri'));
-                    utterance.voice = premiumVoice || englishVoices[0];
+                const matchedVoices = voices.filter(v => v.lang.startsWith(lang));
+                if (matchedVoices.length > 0) {
+                    const premiumVoice = matchedVoices.find(v => v.name.toLowerCase().includes('premium') || v.name.toLowerCase().includes('google') || v.name.toLowerCase().includes('siri'));
+                    utterance.voice = premiumVoice || matchedVoices[0];
                 }
                 window.speechSynthesis.speak(utterance);
             }
         } catch (error) {
-            setMessages(prev => [...prev, { role: 'assistant', content: "Connection issue. Please try again later." }]);
+            setMessages(prev => [...prev, { role: 'assistant', content: strings.connError }]);
         } finally {
             setIsLoading(false);
         }
@@ -103,6 +144,7 @@ const ChatInterface = ({ data, pdfPath }) => {
                 const formData = new FormData();
                 formData.append("file", audioFile);
                 formData.append("model", "whisper-large-v3-turbo");
+                formData.append("language", lang); // tell whisper which language
 
                 let transcribedText = "";
                 try {
@@ -116,7 +158,7 @@ const ChatInterface = ({ data, pdfPath }) => {
                     transcribedText = data.text;
                 } catch (err) {
                     console.error("Transcription error:", err);
-                    alert("Sorry, there was an issue understanding the microphone audio.");
+                    alert(strings.transcriptionError);
                 }
 
                 stream.getTracks().forEach(track => track.stop());
@@ -132,13 +174,20 @@ const ChatInterface = ({ data, pdfPath }) => {
             setIsRecording(true);
         } catch (error) {
             console.error("Mic error:", error);
-            alert("Microphone capture failed. Please ensure permissions are granted.");
+            alert(strings.micError);
         }
     };
 
     const handleClear = () => {
-        setMessages([defaultMessage]);
+        setMessages([{
+            role: 'assistant',
+            content: strings.defaultMsg.replace('{name}', data?.personal_info?.name || "Luis")
+        }]);
         if (window.speechSynthesis) window.speechSynthesis.cancel();
+    };
+    
+    const toggleLanguage = () => {
+        setLang(lang === 'en' ? 'es' : 'en');
     };
 
     return (
@@ -154,22 +203,25 @@ const ChatInterface = ({ data, pdfPath }) => {
                 </div>
                 
                 <div className="nav-actions">
+                    <button onClick={toggleLanguage} className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                        🌐 {lang === 'en' ? 'Español' : 'English'}
+                    </button>
                     <button 
                         onClick={() => setIsVoiceEnabled(!isVoiceEnabled)} 
                         className={`btn ${isVoiceEnabled ? 'btn-primary' : 'btn-outline'}`}
                     >
-                        {isVoiceEnabled ? '🔊 Voice On' : '🔈 Voice Off'}
+                        {isVoiceEnabled ? strings.voiceOn : strings.voiceOff}
                     </button>
                     <a href={pdfPath} target="_blank" rel="noopener noreferrer" className="btn btn-outline">
-                        View Full CV
+                        {strings.viewCV}
                     </a>
                     <a href={pdfPath} download="CV_Luis_Madrigal_Lobo.pdf" className="btn btn-outline">
-                        Download PDF
+                        {strings.downloadPDF}
                     </a>
                 </div>
                 
                 <div className="sidebar-footer">
-                    <p>Built with React + Vite + AI</p>
+                    <p>{strings.builtWith}</p>
                 </div>
             </aside>
 
@@ -198,7 +250,7 @@ const ChatInterface = ({ data, pdfPath }) => {
                             value={input} 
                             onChange={e => setInput(e.target.value)} 
                             onKeyDown={e => e.key === 'Enter' && handleSend()} 
-                            placeholder={isRecording ? "Listening..." : "Ask me about Luis's experience..."} 
+                            placeholder={isRecording ? strings.listening : strings.placeholder} 
                             disabled={isRecording}
                         />
                         <button onClick={handleMicClick} disabled={isLoading && !isRecording} className={`mic-btn ${isRecording ? 'recording' : ''}`} title="Voice message">

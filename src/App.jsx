@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import ChatInterface from './components/ChatInterface'
 import { cvData } from './data/cvData'
 import './App.css'
@@ -8,16 +8,18 @@ import './App.css'
 const baseUrl = import.meta.env.BASE_URL;
 
 function App() {
+  const [lang, setLang] = useState('en');
+
   // Security check to ensure data is loaded before rendering
-  if (!cvData?.personal_info) return null;
+  if (!cvData?.[lang]?.personal_info) return null;
 
   // We define the PDF path once to keep the code DRY
   const pdfPath = `${baseUrl}CV_Luis_Madrigal_Lobo.pdf`;
 
   return (
     <div className="app-container">
-      {/* Pass the English-localized data to the chat component */}
-      <ChatInterface data={cvData} pdfPath={pdfPath} />
+      {/* Pass the localized data and language state to the chat component */}
+      <ChatInterface data={cvData[lang]} pdfPath={pdfPath} lang={lang} setLang={setLang} />
     </div>
   )
 }
