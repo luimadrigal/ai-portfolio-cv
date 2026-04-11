@@ -52,6 +52,17 @@ const UI_STRINGS = {
 
 // Custom Markdown components for dynamic RAG elements
 const markdownComponents = {
+    pre({ node, children, ...props }) {
+        let isCustom = false;
+        if (node?.children?.[0]?.tagName === 'code') {
+            const className = node.children[0].properties?.className || [];
+            if (Array.isArray(className) && className.some(c => String(c).includes('timeline') || String(c).includes('radar-chart') || String(c).includes('project-card'))) {
+                isCustom = true;
+            }
+        }
+        if (isCustom) return <>{children}</>;
+        return <pre {...props}>{children}</pre>;
+    },
     code({ node, inline, className, children, ...props }) {
         const match = /language-(\w+)/.exec(className || '');
         if (!inline && match && match[1] === 'radar-chart') {
@@ -184,9 +195,9 @@ If asked about specific projects from the CV, present each one using a Markdown 
 {"title":"My Project", "description":"...", "technologies":["React", "Node"], "githubLink":"#", "demoLink":"#"}
 \`\`\`
 
-If asked about your career trajectory or timeline, respond with a short introduction (e.g. "I've gone from a technical maker to leading global teams. Here are the key milestones:") followed by ONLY a Markdown timeline code block containing a JSON array with 'date', 'title', 'description', and an 'icon' (choose from: "rocket" for launches/new roles, "people" for leadership, "brain" for AI/data). Example:
+If asked about your career trajectory or timeline, respond with a short introduction (e.g. "I've gone from a technical maker to leading global teams. Here are the key milestones:") followed by ONLY a Markdown timeline code block containing a JSON array with 'date', 'title', 'description', and an 'icon' (choose from: "rocket" for launches/new roles, "people" for leadership, "brain" for AI/data). Ensure the description is highly detailed and highlights key tech stack and business impact metrics based on the CV. Example:
 \`\`\`timeline
-[{"date":"2020 - Present", "title":"Engineering Director", "description":"Leading AI efforts.", "icon":"people"}]
+[{"date":"2020 - Present", "title":"Engineering Director", "description":"Led cross-functional teams to scale distributed systems reducing latency by 40%. Implemented an AI strategy across regions.", "icon":"people"}]
 \`\`\`
 `.trim();
 
