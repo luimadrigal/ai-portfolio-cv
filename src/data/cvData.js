@@ -7,7 +7,8 @@ export const cvData = {
             location: "Heredia, Costa Rica",
             email: "luismadrigal@gmail.com",
             linkedin: "https://www.linkedin.com/in/luis-madrigal-1/",
-            summary: "Engineering Director with 20+ years of experience transforming software organizations across Pharma, Fintech, and Tech. Specializing in bridging technical roadmaps and business growth."
+            summary: "Engineering Director with 20+ years of experience transforming software organizations across Pharma, Fintech, and Tech. Specializing in bridging technical roadmaps and business growth.",
+            about_me: "Happily married to Evelyn and proud father to Luka and Toby. My biggest motivation is my family, spending quality time with them, enjoying job stability, and contributing my experience. I love working with people; I consider my greatest strength to be motivating my team, effectively delegating, and building trust. Furthermore, I am passionate about innovating and automating processes. I deeply enjoy database development, possessing extensive experience in Microsoft SQL Server and query optimization."
         },
         core_impact: [
             "Led distributed teams across LATAM, EMEA, and APAC for high-stakes migrations in Azure and Salesforce.",
@@ -45,7 +46,8 @@ export const cvData = {
             location: "Heredia, Costa Rica",
             email: "luismadrigal@gmail.com",
             linkedin: "https://www.linkedin.com/in/luis-madrigal-1/",
-            summary: "Director de Ingeniería con más de 20 años de experiencia transformando organizaciones de software en Pharma, Fintech y Tecnología. Especializado en alinear la visión técnica con el crecimiento del negocio."
+            summary: "Director de Ingeniería con más de 20 años de experiencia transformando organizaciones de software en Pharma, Fintech y Tecnología. Especializado en alinear la visión técnica con el crecimiento del negocio.",
+            about_me: "Casado felizmente con Evelyn y orgulloso padre de Luka y Toby. Mi mayor motivación es mi familia, el tiempo de calidad con ellos, disfrutar de estabilidad laboral y aportar mi experiencia a la organización. Amo trabajar con la gente; considero que mi mayor fortaleza es motivar a mi equipo de trabajo, saber delegar y generar confianza. Además, me apasiona innovar y automatizar procesos. Disfruto profundamente el área de base de datos, contando con amplia experiencia técnica en Microsoft SQL y optimización de queries."
         },
         core_impact: [
             "Lideró equipos distribuidos en LATAM, EMEA y APAC para migraciones críticas en Azure y Salesforce.",
