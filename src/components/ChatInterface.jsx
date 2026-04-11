@@ -96,11 +96,14 @@ const markdownComponents = {
         if (!inline && match && match[1] === 'timeline') {
             try {
                 const timelineData = JSON.parse(String(children).trim());
+                const iconMap = { 'rocket': '🚀', 'people': '👥', 'brain': '🧠', 'default': '💠' };
                 return (
                     <div className="hybrid-timeline">
                         {Array.isArray(timelineData) && timelineData.map((item, i) => (
                             <div key={i} className="timeline-item">
-                                <div className="timeline-dot"></div>
+                                <div className="timeline-icon">
+                                    {iconMap[item.icon] || iconMap.default}
+                                </div>
                                 <div className="timeline-content">
                                     <span className="timeline-date">{item.date}</span>
                                     <h4>{item.title}</h4>
@@ -180,9 +183,9 @@ If asked about specific projects from the CV, present each one using a Markdown 
 {"title":"My Project", "description":"...", "technologies":["React", "Node"], "githubLink":"#", "demoLink":"#"}
 \`\`\`
 
-If asked about your career trajectory or timeline, respond with a short introduction (e.g. "I've gone from a technical maker to leading global teams. Here are the key milestones:") followed by ONLY a Markdown timeline code block containing a JSON array with 'date', 'title', and 'description'. Example:
+If asked about your career trajectory or timeline, respond with a short introduction (e.g. "I've gone from a technical maker to leading global teams. Here are the key milestones:") followed by ONLY a Markdown timeline code block containing a JSON array with 'date', 'title', 'description', and an 'icon' (choose from: "rocket" for launches/new roles, "people" for leadership, "brain" for AI/data). Example:
 \`\`\`timeline
-[{"date":"2020 - Present", "title":"Engineering Director", "description":"Leading AI efforts."}]
+[{"date":"2020 - Present", "title":"Engineering Director", "description":"Leading AI efforts.", "icon":"people"}]
 \`\`\`
 `.trim();
 
