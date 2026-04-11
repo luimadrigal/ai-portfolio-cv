@@ -23,7 +23,7 @@ const UI_STRINGS = {
         chips: [
             "How do you apply Big Data to business optimization?", 
             "Tell me about your role leading AI transformation.", 
-            "What motivates Luis as an engineering leader?"
+            "What has been your career trajectory?"
         ],
         available: "Open to strategic challenges"
     },
@@ -44,7 +44,7 @@ const UI_STRINGS = {
         chips: [
             "¿Cómo aplicas Big Data para optimizar negocios?", 
             "Háblame de tu rol liderando transformación IA.", 
-            "¿Qué te motiva como líder de ingeniería?"
+            "¿Cuál ha sido tu trayectoria?"
         ],
         available: "Disponible para consultoría"
     }
@@ -91,6 +91,27 @@ const markdownComponents = {
                 );
             } catch (e) {
                 return <div>Invalid Project Data</div>;
+            }
+        }
+        if (!inline && match && match[1] === 'timeline') {
+            try {
+                const timelineData = JSON.parse(String(children).trim());
+                return (
+                    <div className="hybrid-timeline">
+                        {Array.isArray(timelineData) && timelineData.map((item, i) => (
+                            <div key={i} className="timeline-item">
+                                <div className="timeline-dot"></div>
+                                <div className="timeline-content">
+                                    <span className="timeline-date">{item.date}</span>
+                                    <h4>{item.title}</h4>
+                                    <p>{item.description}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                );
+            } catch (e) {
+                return <div>Invalid Timeline Data</div>;
             }
         }
         return <code className={className} {...props}>{children}</code>;
@@ -157,6 +178,11 @@ If the user asks for a visual representation of skills, respond using ONLY a Mar
 If asked about specific projects from the CV, present each one using a Markdown project-card code block containing a JSON object. Example:
 \`\`\`project-card
 {"title":"My Project", "description":"...", "technologies":["React", "Node"], "githubLink":"#", "demoLink":"#"}
+\`\`\`
+
+If asked about your career trajectory or timeline, respond with a short introduction (e.g. "I've gone from a technical maker to leading global teams. Here are the key milestones:") followed by ONLY a Markdown timeline code block containing a JSON array with 'date', 'title', and 'description'. Example:
+\`\`\`timeline
+[{"date":"2020 - Present", "title":"Engineering Director", "description":"Leading AI efforts."}]
 \`\`\`
 `.trim();
 
@@ -227,7 +253,7 @@ If asked about specific projects from the CV, present each one using a Markdown 
             // TTS handling at the end of the stream
             if (isVoiceEnabled && window.speechSynthesis) {
                 window.speechSynthesis.cancel();
-                const cleanText = fullAiText.replace(/[*#`]/g, '').replace(/project-card|radar-chart/g, '');
+                const cleanText = fullAiText.replace(/[*#`]/g, '').replace(/project-card|radar-chart|timeline/g, '');
                 const utterance = new SpeechSynthesisUtterance(cleanText);
                 utterance.lang = lang === 'es' ? 'es-ES' : 'en-US';
                 const voices = window.speechSynthesis.getVoices();
