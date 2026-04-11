@@ -7,11 +7,12 @@
 }
 
 .chat-sidebar {
-    width: 320px;
+    flex: 0 0 40%;
+    max-width: 450px;
+    min-width: 320px;
     display: flex;
     flex-direction: column;
     padding: 40px 24px;
-    flex-shrink: 0;
     z-index: 10;
 }
 
@@ -39,6 +40,15 @@
 
 .profile-avatar:hover {
     transform: scale(1.05);
+}
+
+.profile-avatar.thinking {
+    animation: glowPulse 1.5s infinite alternate;
+}
+
+@keyframes glowPulse {
+    0% { box-shadow: 0 0 10px rgba(6, 182, 212, 0.4); border-color: rgba(6, 182, 212, 0.5); }
+    100% { box-shadow: 0 0 30px rgba(6, 182, 212, 1); border-color: rgba(6, 182, 212, 1); transform: scale(1.05); }
 }
 
 .profile-section h1 {
@@ -198,14 +208,14 @@
 .user .message-bubble {
     background: var(--bubble-user);
     color: var(--bubble-user-text);
-    border-bottom-right-radius: 4px;
+    border-radius: 24px 24px 4px 24px;
 }
 
 .assistant .message-bubble {
     background: var(--bubble-ai);
     color: var(--text-primary);
     border: 1px solid var(--bubble-ai-border);
-    border-bottom-left-radius: 4px;
+    border-radius: 24px 24px 24px 4px;
 }
 
 /* Typing indicator */

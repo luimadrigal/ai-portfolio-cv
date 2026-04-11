@@ -1,9 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --bg: #0b0f19;
+  --bg: #030712;
+  --body-bg: linear-gradient(135deg, #0f172a 0%, #020617 100%);
   --sidebar-bg: rgba(15, 23, 42, 0.7);
-  --chat-bg: #0b0f19;
+  --chat-bg: transparent;
   --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
   --accent-cyan: #06b6d4;
@@ -26,7 +27,7 @@ body, html, #root {
   height: 100dvh;
   font-family: var(--font-family);
   color: var(--text-primary);
-  background-color: var(--bg);
+  background: var(--body-bg);
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

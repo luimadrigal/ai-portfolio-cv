@@ -194,7 +194,7 @@ const ChatInterface = ({ data, pdfPath, lang = 'en', setLang }) => {
         <div className="chat-layout">
             <aside className="chat-sidebar glass">
                 <div className="profile-section">
-                    <img src={profileImg} alt={data?.personal_info?.name || "Luis"} className="profile-avatar" />
+                    <img src={profileImg} alt={data?.personal_info?.name || "Luis"} className={`profile-avatar ${isLoading ? 'thinking' : ''}`} />
                     <h1>{data?.personal_info?.name || "Luis Madrigal Lobo"}</h1>
                     <h2 className="profile-role">{data?.personal_info?.title || "Engineering Director | AI & Big Data"}</h2>
                     {data?.education_certs?.[0] && (
@@ -212,7 +212,7 @@ const ChatInterface = ({ data, pdfPath, lang = 'en', setLang }) => {
                     >
                         {isVoiceEnabled ? strings.voiceOn : strings.voiceOff}
                     </button>
-                    <a href={pdfPath} target="_blank" rel="noopener noreferrer" className="btn btn-outline">
+                    <a href={pdfPath} target="_blank" rel="noopener noreferrer" className="btn btn-primary">
                         {strings.viewCV}
                     </a>
                     <a href={pdfPath} download="CV_Luis_Madrigal_Lobo.pdf" className="btn btn-outline">
