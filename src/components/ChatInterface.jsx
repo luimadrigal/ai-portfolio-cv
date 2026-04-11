@@ -114,7 +114,8 @@ const markdownComponents = {
                     </div>
                 );
             } catch (e) {
-                return <div>Invalid Timeline Data</div>;
+                console.error("Timeline JSON parsing failed:", e, String(children));
+                return <div style={{color: 'red', padding: '10px'}}>Invalid Timeline Data (check console)</div>;
             }
         }
         return <code className={className} {...props}>{children}</code>;
