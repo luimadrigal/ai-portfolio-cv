@@ -4,6 +4,8 @@ import { Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer } fro
 import './ChatInterface.css';
 import profileImg from '../assets/profile.jpg';
 import AnalyticsDashboard from './AnalyticsDashboard';
+import StorytellingView from './StorytellingView';
+import BuildWithMe from './BuildWithMe';
 
 const UI_STRINGS = {
     en: {
@@ -165,12 +167,15 @@ const markdownComponents = {
     }
 };
 
-const ChatInterface = ({ data, pdfPath, lang = 'en', setLang }) => {
+const ChatInterface = ({ data, pdfPath, lang = 'en', setLang, theme, toggleTheme }) => {
     const apiKey = import.meta.env.VITE_GROQ_API_KEY;
     const strings = UI_STRINGS[lang] || UI_STRINGS.en;
     
     const [chatMode, setChatMode] = useState('general');
     const [showAnalytics, setShowAnalytics] = useState(false);
+    const [showStory, setShowStory] = useState(false);
+    const [showBuild, setShowBuild] = useState(false);
+    const [isUserTyping, setIsUserTyping] = useState(false);
 
     const defaultMessage = {
         id: Date.now().toString(),
@@ -181,6 +186,17 @@ const ChatInterface = ({ data, pdfPath, lang = 'en', setLang }) => {
     
     const [messages, setMessages] = useState([defaultMessage]);
     const [input, setInput] = useState('');
+    
+    // Typing detection for avatar life
+    useEffect(() => {
+        if (input.trim().length > 0) {
+            setIsUserTyping(true);
+            const timeout = setTimeout(() => setIsUserTyping(false), 1000);
+            return () => clearTimeout(timeout);
+        } else {
+            setIsUserTyping(false);
+        }
+    }, [input]);
     
     // Status metrics
     const [isLoading, setIsLoading] = useState(false); // Request in flight, before stream starts
@@ -404,8 +420,12 @@ If asked about your career trajectory or timeline, respond with a short introduc
         <div className="chat-layout">
             <aside className="chat-sidebar glass">
                 <div className="profile-section">
-                    {/* The thinking glow applies ONLY while streaming now, conveying the 'AI working' effect */}
-                    <img src={profileImg} alt={data?.personal_info?.name || "Luis"} className={`profile-avatar ${isStreaming ? 'thinking' : ''}`} />
+                    {/* Reactive Avatar: 'thinking' when AI streams, 'active' when user types */}
+                    <img 
+                        src={profileImg} 
+                        alt={data?.personal_info?.name || "Luis"} 
+                        className={`profile-avatar ${isStreaming ? 'thinking' : ''} ${isUserTyping ? 'active' : ''}`} 
+                    />
                     <h1>{data?.personal_info?.name || "Luis Madrigal Lobo"}</h1>
                     
                     <div className="status-badge">
@@ -420,6 +440,12 @@ If asked about your career trajectory or timeline, respond with a short introduc
                 </div>
                 
                 <div className="nav-actions">
+                    <button onClick={toggleTheme} className="btn btn-outline theme-toggle" title="Toggle Theme">
+                        {theme === 'dark' ? '☀️' : '🌙'}
+                    </button>
+                    <button onClick={() => setShowStory(true)} className="btn btn-primary story-btn">
+                        📖 {lang === 'en' ? 'Story Mode' : 'Modo Historia'}
+                    </button>
                     <button onClick={toggleLanguage} className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                         🌐 {lang === 'en' ? 'Español' : 'English'}
                     </button>
@@ -441,7 +467,9 @@ If asked about your career trajectory or timeline, respond with a short introduc
                 </div>
                 
                 <div className="sidebar-footer">
-                    <p>{strings.builtWith}</p>
+                    <button className="build-link-btn" onClick={() => setShowBuild(true)}>
+                        {strings.builtWith}
+                    </button>
                 </div>
             </aside>
 
@@ -529,6 +557,8 @@ If asked about your career trajectory or timeline, respond with a short introduc
             </main>
             
             {showAnalytics && <AnalyticsDashboard lang={lang} onClose={() => setShowAnalytics(false)} />}
+            {showStory && <StorytellingView data={data} lang={lang} onClose={() => setShowStory(false)} />}
+            {showBuild && <BuildWithMe lang={lang} onClose={() => setShowBuild(false)} />}
         </div>
     );
 };
