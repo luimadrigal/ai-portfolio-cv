@@ -207,9 +207,12 @@ const ChatInterface = ({ data, pdfPath, lang = 'en', setLang, theme, toggleTheme
     const mediaRecorderRef = useRef(null);
     const audioChunksRef = useRef([]);
     const chatEndRef = useRef(null);
+    const messageListRef = useRef(null);
 
     useEffect(() => {
-        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        if (messageListRef.current) {
+            messageListRef.current.scrollTop = messageListRef.current.scrollHeight;
+        }
     }, [messages]);
     
     useEffect(() => {
@@ -488,7 +491,7 @@ If asked about your career trajectory or timeline, respond with a short introduc
                     </div>
                 </div>
 
-                <div className="message-list">
+                <div className="message-list" ref={messageListRef}>
                     {messages.map((m) => (
                         <div key={m.id} className={`message-row ${m.role}`}>
                             <div className="message-container">

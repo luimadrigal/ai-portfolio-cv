@@ -192,6 +192,7 @@
     gap: 24px;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-y: contain;
+    scroll-behavior: smooth;
 }
 
 .message-row {
