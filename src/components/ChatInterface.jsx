@@ -10,8 +10,8 @@ import BuildWithMe from './BuildWithMe';
 const UI_STRINGS = {
     en: {
         defaultMsg: {
-            general: "Hello! I am {name}'s AI assistant. I can discuss his extensive background in Engineering Leadership or Big Data expertise. How can I help?",
-            bigdata: "Switching to Big Data & AI context. Ask me about {name}'s cloud architecture, Spark pipelines, and data engineering expertise!",
+            general: "Hello! I am {name}'s AI assistant. I can discuss his extensive background in Engineering Leadership or AI expertise. How can I help?",
+            ai: "Switching to AI & Innovation context. Ask me about {name}'s experience with LLMs, AI Agents, and technical leadership in AI!",
             leadership: "Switching to Leadership context. Ask me about how {name} manages global teams, agile practices, and scales organizations!"
         },
         connError: "Connection issue. Please try again later.",
@@ -26,17 +26,17 @@ const UI_STRINGS = {
         placeholder: "Ask me about Luis's experience...",
         micError: "Microphone capture failed. Please ensure permissions are granted.",
         transcriptionError: "Sorry, there was an issue understanding the microphone audio.",
-        modes: { general: "General", bigdata: "Big Data", leadership: "Leadership" },
+        modes: { general: "General", ai: "IA", leadership: "Leadership" },
         chips: {
             general: [
-                "How do you apply Big Data to business optimization?",
-                "Tell me about your role leading AI transformation.",
+                "Tell me about your AI implementation experience.", 
+                "How do you lead AI transformation?", 
                 "What has been your career trajectory?"
             ],
-            bigdata: [
-                "What's your experience with Databricks and Spark?",
-                "How do you build scalable data architectures?",
-                "Tell me about a complex data problem you solved."
+            ai: [
+                "Tell me about your work with AI Agents.",
+                "How did you implement AI in your current role?",
+                "What's your vision for AI in Engineering Leadership?"
             ],
             leadership: [
                 "How do you manage distributed global teams?",
@@ -48,8 +48,8 @@ const UI_STRINGS = {
     },
     es: {
         defaultMsg: {
-            general: "¡Hola! Soy el asistente de IA de {name}. Puedo hablar sobre su amplia experiencia en Liderazgo de Ingeniería o su conocimiento en Big Data. ¿Cómo puedo ayudarte?",
-            bigdata: "Cambiando al modo Big Data & AI. ¡Pregúntame sobre la experiencia de {name} en arquitectura cloud, pipelines en Spark e ingeniería de datos!",
+            general: "¡Hola! Soy el asistente de IA de {name}. Puedo hablar sobre su amplia experiencia en Liderazgo de Ingeniería o su conocimiento en IA. ¿Cómo puedo ayudarte?",
+            ai: "Cambiando al modo IA e Innovación. ¡Pregúntame sobre la experiencia de {name} con LLMs, Agentes de IA y liderazgo técnico en IA!",
             leadership: "Cambiando al modo Liderazgo. ¡Pregúntame sobre cómo {name} gestiona equipos globales, prácticas ágiles y escala organizaciones!"
         },
         connError: "Problema de conexión. Por favor intenta más tarde.",
@@ -64,17 +64,17 @@ const UI_STRINGS = {
         placeholder: "Pregúntame sobre la experiencia de Luis...",
         micError: "Falló la captura del micrófono. Por favor asegura los permisos.",
         transcriptionError: "Lo siento, hubo un problema entendiendo el audio del micrófono.",
-        modes: { general: "General", bigdata: "Big Data", leadership: "Liderazgo" },
+        modes: { general: "General", ai: "IA", leadership: "Liderazgo" },
         chips: {
             general: [
-                "¿Cómo aplicas Big Data para optimizar negocios?",
-                "Háblame de tu rol liderando transformación IA.",
+                "Háblame de tu experiencia implementando IA.", 
+                "¿Cómo lideras la transformación con IA?", 
                 "¿Cuál ha sido tu trayectoria?"
             ],
-            bigdata: [
-                "¿Cuál es tu experiencia con Databricks y Spark?",
-                "¿Cómo construyes arquitecturas escalables?",
-                "Háblame de un reto complejo de datos resuelto."
+            ai: [
+                "Háblame de tu trabajo con Agentes de IA.",
+                "¿Cómo has implementado IA en tu rol actual?",
+                "¿Cuál es tu visión de la IA en el liderazgo?"
             ],
             leadership: [
                 "¿Cómo gestionas equipos globales distribuidos?",
@@ -201,7 +201,7 @@ const markdownComponents = {
         return <pre {...props}>{children}</pre>;
     },
     code({ node, inline, className, children, ...props }) {
-        const match = /language-(\w+)/.exec(className || '');
+        const match = /language-([\w-]+)/.exec(className || '');
         if (!inline && match && match[1] === 'radar-chart') {
             try {
                 const data = safeJsonParse(String(children).trim());
@@ -356,23 +356,23 @@ const ChatInterface = ({ data, pdfPath, lang = 'en', setLang, theme, toggleTheme
             ? "You are the professional AI assistant for Luis Madrigal Lobo. Answer in English only."
             : "You are the professional AI assistant for Luis Madrigal Lobo. Answer in Spanish only.";
 
-        const modeInstruction = chatMode === 'bigdata'
-            ? " Focus heavily on technical architectures, Big Data, Spark, Azure, AWS and software patterns."
+        const modeInstruction = chatMode === 'ai'
+            ? " Focus heavily on AI, LLMs, AI Agents, innovation and technical leadership. CRITICAL: Mention that professional AI expertise comes primarily from the 'Engineering Director' role (2022-Present). Clarify that while Luis is studying Big Data, his current professional expertise is in IA and Leadership."
             : chatMode === 'leadership'
                 ? " Focus heavily on team management, agile practices, organizational scale, and leadership style."
                 : "";
 
         const formatInstructions = `
-If asked about technical skills, expertise, or a visual summary of capabilities, respond using a Markdown radar-chart code block. Use this for questions about "how" you apply technology or "what" your skills are.
+If asked about technical skills, expertise, or a visual summary of capabilities, respond using a Markdown radar-chart code block. Focus on AI and Leadership skills.
 Example:
 \`\`\`radar-chart
-[{"subject":"Big Data", "A":95}, {"subject":"Cloud Arch", "A":90}, {"subject":"AI/ML", "A":85}, {"subject":"Leadership", "A":95}, {"subject":"DevOps", "A":80}]
+[{"subject":"AI/ML", "A":95}, {"subject":"AI Agents", "A":90}, {"subject":"Leadership", "A":95}, {"subject":"Innovation", "A":90}, {"subject":"Architecture", "A":85}]
 \`\`\`
 
-If asked about specific achievements, roles, or impact (like AI transformation or Big Data optimization), present the most relevant project using a Markdown project-card code block.
+If asked about specific achievements, roles, or impact (like AI transformation or agent implementation), present the most relevant project using a Markdown project-card code block. Highlight the impact during the Engineering Director tenure.
 Example:
 \`\`\`project-card
-{"title":"AI Transformation Leader", "description":"Implemented AI Agents reducing manual overhead by 20%...", "technologies":["LLMs", "Python", "Azure"], "githubLink":"#", "demoLink":"#"}
+{"title":"AI Transformation Leader", "description":"Led AI implementation reducing operational overhead by 20% through custom agents...", "technologies":["LLMs", "Python", "LangChain"], "githubLink":"#", "demoLink":"#"}
 \`\`\`
 
 ONLY if asked about career history, trajectory, milestones, or a chronological overview, use the Markdown timeline code block. Avoid using the timeline for technical or topical questions.
@@ -643,7 +643,7 @@ Select the SINGLE most appropriate component for the user's specific request. Be
                         <span>{strings.available}</span>
                     </div>
 
-                    <h2 className="profile-role">{data?.personal_info?.title || "Engineering Director | AI & Big Data"}</h2>
+                    <h2 className="profile-role">{data?.personal_info?.title || "Engineering Director | AI & Technical Innovation"}</h2>
                     {data?.education_certs?.[0] && (
                         <p className="profile-education">{data.education_certs[0]}</p>
                     )}
@@ -689,8 +689,8 @@ Select the SINGLE most appropriate component for the user's specific request. Be
                         <button className={`mode-tab ${chatMode === 'general' ? 'active' : ''}`} onClick={() => setChatMode('general')}>
                             {strings.modes.general}
                         </button>
-                        <button className={`mode-tab ${chatMode === 'bigdata' ? 'active' : ''}`} onClick={() => setChatMode('bigdata')}>
-                            🚀 {strings.modes.bigdata}
+                        <button className={`mode-tab ${chatMode === 'ai' ? 'active' : ''}`} onClick={() => setChatMode('ai')}>
+                            🧠 {strings.modes.ai}
                         </button>
                         <button className={`mode-tab ${chatMode === 'leadership' ? 'active' : ''}`} onClick={() => setChatMode('leadership')}>
                             👥 {strings.modes.leadership}
