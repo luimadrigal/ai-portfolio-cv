@@ -231,10 +231,16 @@ const markdownComponents = {
                         <div className="tech-badges">
                             {techBadges.map((tech, i) => <span key={i} className="tech-badge">{tech}</span>)}
                         </div>
-                        <div className="card-actions">
-                            <a href={project.githubLink} target="_blank" rel="noreferrer" className="btn btn-outline" style={{ padding: '8px 12px', fontSize: '0.8rem' }}>Repo</a>
-                            <a href={project.demoLink} target="_blank" rel="noreferrer" className="btn btn-primary" style={{ padding: '8px 12px', fontSize: '0.8rem' }}>Demo</a>
-                        </div>
+                        {(project.githubLink && project.githubLink !== "#" && project.githubLink !== "https://github.com/luismadrigal") || (project.demoLink && project.demoLink !== "#" && project.demoLink !== "#demo") ? (
+                            <div className="card-actions">
+                                {project.githubLink && project.githubLink !== "#" && project.githubLink !== "https://github.com/luismadrigal" && (
+                                    <a href={project.githubLink} target="_blank" rel="noreferrer" className="btn btn-outline" style={{ padding: '8px 12px', fontSize: '0.8rem' }}>Repo</a>
+                                )}
+                                {project.demoLink && project.demoLink !== "#" && project.demoLink !== "#demo" && (
+                                    <a href={project.demoLink} target="_blank" rel="noreferrer" className="btn btn-primary" style={{ padding: '8px 12px', fontSize: '0.8rem' }}>Demo</a>
+                                )}
+                            </div>
+                        ) : null}
                     </div>
                 );
             } catch (e) {
@@ -357,7 +363,7 @@ const ChatInterface = ({ data, pdfPath, lang = 'en', setLang, theme, toggleTheme
             : "You are the professional AI assistant for Luis Madrigal Lobo. Answer in Spanish only.";
 
         const modeInstruction = chatMode === 'ai'
-            ? " Focus heavily on AI, LLMs, AI Agents, innovation and technical leadership. CRITICAL: Mention that professional AI expertise comes primarily from the 'Engineering Director' role (2022-Present). Clarify that while Luis is studying Big Data, his current professional expertise is in IA and Leadership."
+            ? " Focus heavily on AI, LLMs, AI Agents, innovation and technical leadership. IMPORTANT: Luis's professional AI expertise is concentrated in his current role as Engineering Director (2022-Present). Ensure you highlight his implementation of AI Agents and SDLC automation in this specific tenure. Clarify that while he is currently studying for a Master's in Big Data, his proven professional track record is in AI Leadership."
             : chatMode === 'leadership'
                 ? " Focus heavily on team management, agile practices, organizational scale, and leadership style."
                 : "";
@@ -372,7 +378,7 @@ Example:
 If asked about specific achievements, roles, or impact (like AI transformation or agent implementation), present the most relevant project using a Markdown project-card code block. Highlight the impact during the Engineering Director tenure.
 Example:
 \`\`\`project-card
-{"title":"AI Transformation Leader", "description":"Led AI implementation reducing operational overhead by 20% through custom agents...", "technologies":["LLMs", "Python", "LangChain"], "githubLink":"#", "demoLink":"#"}
+{"title":"AI Transformation Leader", "description":"Led AI implementation reducing operational overhead by 20% through custom agents...", "technologies":["LLMs", "Python", "LangChain"]}
 \`\`\`
 
 ONLY if asked about career history, trajectory, milestones, or a chronological overview, use the Markdown timeline code block. Avoid using the timeline for technical or topical questions.
@@ -479,13 +485,14 @@ Select the SINGLE most appropriate component for the user's specific request. Be
                         
                         if (provider.type === 'openai') {
                             const lines = buffer.split('\n');
-                            buffer = lines.pop() || ""; // Keep partial line in buffer
+                            buffer = lines.pop() || "";
                             
                             for (const line of lines) {
                                 const cleanLine = line.trim();
-                                if (cleanLine.startsWith('data: ') && cleanLine !== 'data: [DONE]') {
+                                if (cleanLine.startsWith('data:') && cleanLine !== 'data: [DONE]') {
                                     try {
-                                        const dataObj = JSON.parse(cleanLine.slice(6));
+                                        const jsonContent = cleanLine.replace(/^data:\s*/, '');
+                                        const dataObj = JSON.parse(jsonContent);
                                         const content = dataObj.choices[0]?.delta?.content;
                                         if (content) {
                                             fullAiText += content;
@@ -497,64 +504,65 @@ Select the SINGLE most appropriate component for the user's specific request. Be
                                 }
                             }
                         } else if (provider.type === 'gemini') {
-                            const parts = buffer.split('}\n{');
-                            buffer = parts.pop() || ""; // Keep partial JSON in buffer
-                            
-                            for (let j = 0; j < parts.length; j++) {
-                                let part = parts[j];
-                                if (j === 0 && !part.startsWith('{')) {
-                                    // Handle start of array if it's the very first part
-                                    part = part.replace(/^\[/, '');
-                                }
-                                if (!part.startsWith('{')) part = '{' + part;
-                                if (!part.endsWith('}')) part = part + '}';
+                            // More robust Gemini parsing: find all complete JSON objects
+                            let startPos = 0;
+                            while (true) {
+                                let openBrace = buffer.indexOf('{', startPos);
+                                if (openBrace === -1) break;
                                 
-                                try {
-                                    const dataObj = JSON.parse(part);
-                                    const content = dataObj.candidates?.[0]?.content?.parts?.[0]?.text;
-                                    if (content) {
-                                        fullAiText += content;
-                                        setMessages(prev => prev.map(m => m.id === messageId ? { ...m, content: fullAiText } : m));
+                                let braceCount = 0;
+                                let endPos = -1;
+                                let inString = false;
+                                
+                                for (let i = openBrace; i < buffer.length; i++) {
+                                    const char = buffer[i];
+                                    if (char === '"' && buffer[i-1] !== '\\') inString = !inString;
+                                    if (!inString) {
+                                        if (char === '{') braceCount++;
+                                        if (char === '}') braceCount--;
+                                        if (braceCount === 0) {
+                                            endPos = i + 1;
+                                            break;
+                                        }
                                     }
-                                } catch (e) {
-                                    // If parsing fails, put it back in buffer and wait for more data
-                                    buffer = part + (buffer ? '\n' + buffer : '');
-                                    break; 
+                                }
+                                
+                                if (endPos !== -1) {
+                                    const jsonStr = buffer.slice(openBrace, endPos);
+                                    try {
+                                        const dataObj = JSON.parse(jsonStr);
+                                        const content = dataObj.candidates?.[0]?.content?.parts?.[0]?.text;
+                                        if (content) {
+                                            fullAiText += content;
+                                            setMessages(prev => prev.map(m => m.id === messageId ? { ...m, content: fullAiText } : m));
+                                        }
+                                    } catch (e) {}
+                                    startPos = endPos;
+                                } else {
+                                    break; // Wait for more data
                                 }
                             }
+                            buffer = buffer.slice(startPos);
                         }
                     }
                 }
 
-                // Final check for empty response
                 if (!fullAiText.trim()) {
                     throw new Error("Empty Response");
                 }
                 
                 setIsStreaming(false);
-
-                if (isVoiceEnabled && window.speechSynthesis) {
-                    window.speechSynthesis.cancel();
-                    const cleanText = fullAiText.replace(/[*#`]/g, '').replace(/project-card|radar-chart|timeline/g, '');
-                    const utterance = new SpeechSynthesisUtterance(cleanText);
-                    utterance.lang = lang === 'es' ? 'es-ES' : 'en-US';
-                    const voices = window.speechSynthesis.getVoices();
-                    const matchedVoices = voices.filter(v => v.lang.startsWith(lang));
-                    if (matchedVoices.length > 0) {
-                        const premiumVoice = matchedVoices.find(v => v.name.toLowerCase().includes('premium') || v.name.toLowerCase().includes('google'));
-                        utterance.voice = premiumVoice || matchedVoices[0];
-                    }
-                    window.speechSynthesis.speak(utterance);
-                }
-
                 return; 
 
             } catch (error) {
                 console.error(`Failure with ${provider.name}:`, error);
+                setIsLoading(false);
+                setIsStreaming(false);
                 if (i === PROVIDERS.length - 1) {
-                    const errorMsg = error.message === "Rate Limit" ? strings.rateLimitError : strings.connError;
-                    setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), role: 'assistant', content: errorMsg, rating: null }]);
-                    setIsLoading(false);
+                    const errorMsg = error.message === "Rate Limit" ? strings.rateLimitError : (fullAiText ? "" : strings.connError);
+                    if (errorMsg) {
+                        setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), role: 'assistant', content: errorMsg, rating: null }]);
+                    }
                 }
             }
         }

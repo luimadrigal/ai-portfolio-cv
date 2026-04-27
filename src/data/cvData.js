@@ -87,16 +87,12 @@ export const cvData = {
             {
                 title: "Pharma AI Transformation Platform",
                 description: "An enterprise-grade platform integrating AI Agents to streamline the software development lifecycle, cutting manual overhead by 20% and improving overall team velocity.",
-                technologies: ["React", "Python", "Azure", "OpenAI"],
-                demoLink: "#demo",
-                githubLink: "https://github.com/luismadrigal"
+                technologies: ["React", "Python", "Azure", "OpenAI"]
             },
             {
                 title: "Fintech Data Pipeline Optimization",
                 description: "Architected a high-throughput data pipeline bridging C#, MS SQL Server, and Node.js for scalable financial processing in Eastern Europe.",
-                technologies: ["C#", "MS SQL Server", "Node.js", "Big Data"],
-                demoLink: "#demo",
-                githubLink: "https://github.com/luismadrigal"
+                technologies: ["C#", "MS SQL Server", "Node.js", "Big Data"]
             }
         ]
     },
@@ -187,16 +183,12 @@ export const cvData = {
             {
                 title: "Plataforma AI Transformation para Pharma",
                 description: "Plataforma empresarial que integra Agentes de IA para optimizar el ciclo de desarrollo, reduciendo el trabajo manual en un 20% y mejorando la velocidad del equipo.",
-                technologies: ["React", "Python", "Azure", "OpenAI"],
-                demoLink: "#demo",
-                githubLink: "https://github.com/luismadrigal"
+                technologies: ["React", "Python", "Azure", "OpenAI"]
             },
             {
                 title: "Optimización de Pipeline de Datos Fintech",
                 description: "Arquitectura de pipeline de alto rendimiento conectando C#, MS SQL Server y Node.js para procesamiento financiero escalable en Europa del Este.",
-                technologies: ["C#", "MS SQL Server", "Node.js", "Big Data"],
-                demoLink: "#demo",
-                githubLink: "https://github.com/luismadrigal"
+                technologies: ["C#", "MS SQL Server", "Node.js", "Big Data"]
             }
         ]
     }
