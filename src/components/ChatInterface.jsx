@@ -206,11 +206,11 @@ const markdownComponents = {
             try {
                 const data = safeJsonParse(String(children).trim());
                 return (
-                    <div style={{ width: '100%', height: 300, background: 'rgba(0,0,0,0.2)', borderRadius: '12px', padding: '16px', marginTop: '12px' }}>
-                        <ResponsiveContainer>
+                    <div className="radar-chart-wrapper" style={{ width: '100%', minHeight: '300px', background: 'rgba(0,0,0,0.2)', borderRadius: '12px', padding: '16px', marginTop: '12px', display: 'block', position: 'relative', overflow: 'hidden' }}>
+                        <ResponsiveContainer width="99%" height={300}>
                             <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data}>
                                 <PolarGrid stroke="rgba(255,255,255,0.2)" />
-                                <PolarAngleAxis dataKey="subject" tick={{ fill: 'var(--text-secondary)' }} />
+                                <PolarAngleAxis dataKey="subject" tick={{ fill: 'var(--text-secondary)', fontSize: 12 }} />
                                 <Radar name="Skills" dataKey="A" stroke="var(--accent-cyan)" fill="var(--accent-cyan)" fillOpacity={0.5} />
                             </RadarChart>
                         </ResponsiveContainer>
