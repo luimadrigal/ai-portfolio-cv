@@ -6,6 +6,7 @@ import profileImg from '../assets/profile.jpg';
 import AnalyticsDashboard from './AnalyticsDashboard';
 import StorytellingView from './StorytellingView';
 import BuildWithMe from './BuildWithMe';
+import JDAnalyzer from './JDAnalyzer';
 
 const UI_STRINGS = {
     en: {
@@ -21,6 +22,7 @@ const UI_STRINGS = {
         viewCV: "View Full CV",
         downloadPDF: "Download PDF",
         viewAnalytics: "📊 View Analytics",
+        analyzeMatch: "✨ Analyze Match",
         builtWith: "Built with React + Vite + AI",
         listening: "Listening...",
         placeholder: "Ask me about Luis's experience...",
@@ -59,6 +61,7 @@ const UI_STRINGS = {
         viewCV: "Ver CV Completo",
         downloadPDF: "Descargar PDF",
         viewAnalytics: "📊 Ver Analíticas",
+        analyzeMatch: "✨ Analizar Match",
         builtWith: "Construido con React + Vite + AI",
         listening: "Escuchando...",
         placeholder: "Pregúntame sobre la experiencia de Luis...",
@@ -309,6 +312,7 @@ const ChatInterface = ({ data, pdfPath, lang = 'en', setLang, theme, toggleTheme
     const [showAnalytics, setShowAnalytics] = useState(false);
     const [showStory, setShowStory] = useState(false);
     const [showBuild, setShowBuild] = useState(false);
+    const [showJDAnalyzer, setShowJDAnalyzer] = useState(false);
     const [isUserTyping, setIsUserTyping] = useState(false);
 
     const defaultMessage = {
@@ -680,6 +684,9 @@ CRITICAL INSTRUCTIONS:
                     <button onClick={() => setShowStory(true)} className="btn btn-primary story-btn">
                         📖 {lang === 'en' ? 'Story Mode' : 'Modo Historia'}
                     </button>
+                    <button onClick={() => setShowJDAnalyzer(true)} className="btn btn-outline" style={{ border: '1px solid var(--accent-cyan)', color: 'var(--accent-cyan)' }}>
+                        {strings.analyzeMatch}
+                    </button>
                     <button onClick={toggleLanguage} className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                         🌐 {lang === 'en' ? 'Español' : 'English'}
                     </button>
@@ -793,6 +800,7 @@ CRITICAL INSTRUCTIONS:
             {showAnalytics && <AnalyticsDashboard lang={lang} onClose={() => setShowAnalytics(false)} />}
             {showStory && <StorytellingView data={data} lang={lang} onClose={() => setShowStory(false)} />}
             {showBuild && <BuildWithMe lang={lang} onClose={() => setShowBuild(false)} />}
+            {showJDAnalyzer && <JDAnalyzer data={data} providers={PROVIDERS} lang={lang} onClose={() => setShowJDAnalyzer(false)} />}
         </div>
     );
 };
