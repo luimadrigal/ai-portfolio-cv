@@ -15,6 +15,7 @@ const UI_STRINGS = {
             leadership: "Switching to Leadership context. Ask me about how {name} manages global teams, agile practices, and scales organizations!"
         },
         connError: "Connection issue. Please try again later.",
+        rateLimitError: "The AI is busy (rate limit). Please wait a moment before asking again.",
         voiceOn: "🔊 Voice On",
         voiceOff: "🔈 Voice Off",
         viewCV: "View Full CV",
@@ -28,8 +29,8 @@ const UI_STRINGS = {
         modes: { general: "General", bigdata: "Big Data", leadership: "Leadership" },
         chips: {
             general: [
-                "How do you apply Big Data to business optimization?", 
-                "Tell me about your role leading AI transformation.", 
+                "How do you apply Big Data to business optimization?",
+                "Tell me about your role leading AI transformation.",
                 "What has been your career trajectory?"
             ],
             bigdata: [
@@ -52,6 +53,7 @@ const UI_STRINGS = {
             leadership: "Cambiando al modo Liderazgo. ¡Pregúntame sobre cómo {name} gestiona equipos globales, prácticas ágiles y escala organizaciones!"
         },
         connError: "Problema de conexión. Por favor intenta más tarde.",
+        rateLimitError: "La IA está ocupada (límite de peticiones). Por favor espera un momento antes de volver a preguntar.",
         voiceOn: "🔊 Voz Activada",
         voiceOff: "🔈 Voz Desact.",
         viewCV: "Ver CV Completo",
@@ -65,8 +67,8 @@ const UI_STRINGS = {
         modes: { general: "General", bigdata: "Big Data", leadership: "Liderazgo" },
         chips: {
             general: [
-                "¿Cómo aplicas Big Data para optimizar negocios?", 
-                "Háblame de tu rol liderando transformación IA.", 
+                "¿Cómo aplicas Big Data para optimizar negocios?",
+                "Háblame de tu rol liderando transformación IA.",
                 "¿Cuál ha sido tu trayectoria?"
             ],
             bigdata: [
@@ -82,6 +84,107 @@ const UI_STRINGS = {
         },
         available: "Disponible para consultoría"
     }
+};
+
+// Resilient JSON parser to handle truncated or malformed AI responses
+const safeJsonParse = (str) => {
+    const clean = str.trim();
+    try {
+        return JSON.parse(clean);
+    } catch (e) {
+        // Heuristic to fix missing closing brackets/braces and trailing commas
+        let repaired = clean.replace(/,\s*$/, ''); // Remove trailing comma
+
+        const openBraces = (repaired.match(/\{/g) || []).length;
+        const closeBraces = (repaired.match(/\}/g) || []).length;
+        const openBrackets = (repaired.match(/\[/g) || []).length;
+        const closeBrackets = (repaired.match(/\]/g) || []).length;
+
+        // Close objects first, then arrays
+        for (let i = 0; i < (openBraces - closeBraces); i++) repaired += '}';
+        for (let i = 0; i < (openBrackets - closeBrackets); i++) repaired += ']';
+
+        try {
+            return JSON.parse(repaired);
+        } catch (e2) {
+            console.error("JSON repair failed:", e2, "Original:", clean, "Repaired:", repaired);
+            throw e; // throw original error
+        }
+    }
+};
+
+// Robust structural scanner to auto-detect and wrap naked JSON in markdown code blocks
+const processMarkdown = (text) => {
+    if (!text) return text;
+
+    // Split by existing code blocks to avoid double-wrapping
+    const parts = text.split(/(```[\s\S]*?```)/);
+
+    return parts.map(part => {
+        if (part.startsWith('```')) return part;
+
+        let processed = part;
+
+        // Find JSON-like structures using brace/bracket matching
+        const findCandidates = (str) => {
+            const results = [];
+            let startIdx = -1;
+            let count = 0;
+            let inString = false;
+            let type = null; // '{' or '['
+
+            for (let i = 0; i < str.length; i++) {
+                const char = str[i];
+                if (char === '"' && str[i - 1] !== '\\') inString = !inString;
+
+                if (!inString) {
+                    if (char === '{' || char === '[') {
+                        if (count === 0) {
+                            startIdx = i;
+                            type = char;
+                        }
+                        count++;
+                    } else if ((char === '}' && type === '{') || (char === ']' && type === '[')) {
+                        count--;
+                        if (count === 0 && startIdx !== -1) {
+                            results.push({ start: startIdx, end: i + 1, content: str.slice(startIdx, i + 1) });
+                            startIdx = -1;
+                        }
+                    }
+                }
+            }
+
+            // Handle incomplete JSON at the end (for streaming)
+            if (count > 0 && startIdx !== -1) {
+                results.push({ start: startIdx, end: str.length, content: str.slice(startIdx) });
+            }
+
+            return results;
+        };
+
+        const candidates = findCandidates(processed);
+
+        // Process candidates from end to beginning to maintain indices
+        for (let i = candidates.length - 1; i >= 0; i--) {
+            const { start, end, content } = candidates[i];
+            let componentType = null;
+
+            // Validate content looks like our specific components
+            if (content.includes('"subject"') && content.includes('"A"')) {
+                componentType = 'radar-chart';
+            } else if (content.includes('"title"') && (content.includes('"technologies"') || content.includes('"githubLink"'))) {
+                componentType = 'project-card';
+            } else if (content.includes('"date"') && content.includes('"icon"')) {
+                componentType = 'timeline';
+            }
+
+            if (componentType) {
+                processed = processed.slice(0, start) + `\n\`\`\`${componentType}\n${content.trim()}\n\`\`\`\n` + processed.slice(end);
+            }
+        }
+
+        return processed;
+    }).join('');
 };
 
 // Custom Markdown components for dynamic RAG elements
@@ -101,7 +204,7 @@ const markdownComponents = {
         const match = /language-(\w+)/.exec(className || '');
         if (!inline && match && match[1] === 'radar-chart') {
             try {
-                const data = JSON.parse(String(children).trim());
+                const data = safeJsonParse(String(children).trim());
                 return (
                     <div style={{ width: '100%', height: 300, background: 'rgba(0,0,0,0.2)', borderRadius: '12px', padding: '16px', marginTop: '12px' }}>
                         <ResponsiveContainer>
@@ -119,7 +222,7 @@ const markdownComponents = {
         }
         if (!inline && match && match[1] === 'project-card') {
             try {
-                const project = JSON.parse(String(children).trim());
+                const project = safeJsonParse(String(children).trim());
                 const techBadges = Array.isArray(project.technologies) ? project.technologies : [];
                 return (
                     <div className="portfolio-card">
@@ -129,8 +232,8 @@ const markdownComponents = {
                             {techBadges.map((tech, i) => <span key={i} className="tech-badge">{tech}</span>)}
                         </div>
                         <div className="card-actions">
-                            <a href={project.githubLink} target="_blank" rel="noreferrer" className="btn btn-outline" style={{padding: '8px 12px', fontSize: '0.8rem'}}>Repo</a>
-                            <a href={project.demoLink} target="_blank" rel="noreferrer" className="btn btn-primary" style={{padding: '8px 12px', fontSize: '0.8rem'}}>Demo</a>
+                            <a href={project.githubLink} target="_blank" rel="noreferrer" className="btn btn-outline" style={{ padding: '8px 12px', fontSize: '0.8rem' }}>Repo</a>
+                            <a href={project.demoLink} target="_blank" rel="noreferrer" className="btn btn-primary" style={{ padding: '8px 12px', fontSize: '0.8rem' }}>Demo</a>
                         </div>
                     </div>
                 );
@@ -140,7 +243,7 @@ const markdownComponents = {
         }
         if (!inline && match && match[1] === 'timeline') {
             try {
-                const timelineData = JSON.parse(String(children).trim());
+                const timelineData = safeJsonParse(String(children).trim());
                 const iconMap = { 'rocket': '🚀', 'people': '👥', 'brain': '🧠', 'default': '💠' };
                 return (
                     <div className="hybrid-timeline">
@@ -160,7 +263,7 @@ const markdownComponents = {
                 );
             } catch (e) {
                 console.error("Timeline JSON parsing failed:", e, String(children));
-                return <div style={{color: 'red', padding: '10px'}}>Invalid Timeline Data (check console)</div>;
+                return <div style={{ color: 'red', padding: '10px' }}>Invalid Timeline Data (check console)</div>;
             }
         }
         return <code className={className} {...props}>{children}</code>;
@@ -168,9 +271,33 @@ const markdownComponents = {
 };
 
 const ChatInterface = ({ data, pdfPath, lang = 'en', setLang, theme, toggleTheme }) => {
-    const apiKey = import.meta.env.VITE_GROQ_API_KEY;
+    const PROVIDERS = [
+        {
+            name: 'Groq',
+            apiKey: import.meta.env.VITE_GROQ_API_KEY,
+            endpoint: "https://api.groq.com/openai/v1/chat/completions",
+            model: "llama-3.3-70b-versatile",
+            type: 'openai'
+        },
+        {
+            name: 'Gemini',
+            apiKey: import.meta.env.VITE_GEMINI_API_KEY,
+            endpoint: "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:streamGenerateContent",
+            model: "gemini-1.5-flash",
+            type: 'gemini'
+        },
+        {
+            name: 'OpenRouter',
+            apiKey: import.meta.env.VITE_OPENROUTER_API_KEY,
+            endpoint: "https://openrouter.ai/api/v1/chat/completions",
+            model: "google/gemini-2.0-flash-lite-preview-02-05:free",
+            type: 'openai'
+        }
+    ].filter(p => p.apiKey);
+
+
     const strings = UI_STRINGS[lang] || UI_STRINGS.en;
-    
+
     const [chatMode, setChatMode] = useState('general');
     const [showAnalytics, setShowAnalytics] = useState(false);
     const [showStory, setShowStory] = useState(false);
@@ -183,10 +310,10 @@ const ChatInterface = ({ data, pdfPath, lang = 'en', setLang, theme, toggleTheme
         content: strings.defaultMsg[chatMode].replace('{name}', data?.personal_info?.name || "Luis"),
         rating: null
     };
-    
+
     const [messages, setMessages] = useState([defaultMessage]);
     const [input, setInput] = useState('');
-    
+
     // Typing detection for avatar life
     useEffect(() => {
         if (input.trim().length > 0) {
@@ -197,11 +324,11 @@ const ChatInterface = ({ data, pdfPath, lang = 'en', setLang, theme, toggleTheme
             setIsUserTyping(false);
         }
     }, [input]);
-    
+
     // Status metrics
     const [isLoading, setIsLoading] = useState(false); // Request in flight, before stream starts
     const [isStreaming, setIsStreaming] = useState(false); // During stream chunk parsing
-    
+
     const [isRecording, setIsRecording] = useState(false);
     const [isVoiceEnabled, setIsVoiceEnabled] = useState(false);
     const mediaRecorderRef = useRef(null);
@@ -214,7 +341,7 @@ const ChatInterface = ({ data, pdfPath, lang = 'en', setLang, theme, toggleTheme
             messageListRef.current.scrollTop = messageListRef.current.scrollHeight;
         }
     }, [messages]);
-    
+
     useEffect(() => {
         setMessages([{
             id: Date.now().toString(),
@@ -225,31 +352,36 @@ const ChatInterface = ({ data, pdfPath, lang = 'en', setLang, theme, toggleTheme
     }, [lang, chatMode]);
 
     const getSystemPrompt = () => {
-        const base = lang === 'en' 
-            ? "You are the professional AI assistant for Luis Madrigal Lobo. Answer in English only." 
+        const base = lang === 'en'
+            ? "You are the professional AI assistant for Luis Madrigal Lobo. Answer in English only."
             : "You are the professional AI assistant for Luis Madrigal Lobo. Answer in Spanish only.";
-        
-        const modeInstruction = chatMode === 'bigdata' 
-            ? " Focus heavily on technical architectures, Big Data, Spark, Azure, AWS and software patterns." 
-            : chatMode === 'leadership' 
-                ? " Focus heavily on team management, agile practices, organizational scale, and leadership style." 
+
+        const modeInstruction = chatMode === 'bigdata'
+            ? " Focus heavily on technical architectures, Big Data, Spark, Azure, AWS and software patterns."
+            : chatMode === 'leadership'
+                ? " Focus heavily on team management, agile practices, organizational scale, and leadership style."
                 : "";
-        
+
         const formatInstructions = `
-If the user asks for a visual representation of skills, respond using ONLY a Markdown radar-chart code block containing a JSON array with 'subject' and 'A' (value 1-100). Example:
+If asked about technical skills, expertise, or a visual summary of capabilities, respond using a Markdown radar-chart code block. Use this for questions about "how" you apply technology or "what" your skills are.
+Example:
 \`\`\`radar-chart
-[{"subject":"React", "A":90},{"subject":"SQL", "A":95}]
+[{"subject":"Big Data", "A":95}, {"subject":"Cloud Arch", "A":90}, {"subject":"AI/ML", "A":85}, {"subject":"Leadership", "A":95}, {"subject":"DevOps", "A":80}]
 \`\`\`
 
-If asked about specific projects from the CV, present each one using a Markdown project-card code block containing a JSON object. Example:
+If asked about specific achievements, roles, or impact (like AI transformation or Big Data optimization), present the most relevant project using a Markdown project-card code block.
+Example:
 \`\`\`project-card
-{"title":"My Project", "description":"...", "technologies":["React", "Node"], "githubLink":"#", "demoLink":"#"}
+{"title":"AI Transformation Leader", "description":"Implemented AI Agents reducing manual overhead by 20%...", "technologies":["LLMs", "Python", "Azure"], "githubLink":"#", "demoLink":"#"}
 \`\`\`
 
-If asked about your career trajectory or timeline, respond with a short introduction (e.g. "I've gone from a technical maker to leading global teams. Here are the key milestones:") followed by ONLY a Markdown timeline code block containing a JSON array with 'date', 'title', 'description', and an 'icon' (choose from: "rocket" for launches/new roles, "people" for leadership, "brain" for AI/data). Ensure the description is highly detailed and highlights key tech stack and business impact metrics based on the CV. Example:
+ONLY if asked about career history, trajectory, milestones, or a chronological overview, use the Markdown timeline code block. Avoid using the timeline for technical or topical questions.
+Example:
 \`\`\`timeline
-[{"date":"2020 - Present", "title":"Engineering Director", "description":"Led cross-functional teams to scale distributed systems reducing latency by 40%. Implemented an AI strategy across regions.", "icon":"people"}]
+[{"date":"2022 - Present", "title":"Engineering Director", "description":"...", "icon":"rocket"}]
 \`\`\`
+
+Select the SINGLE most appropriate component for the user's specific request. Be concise in your introductory text.
 `.trim();
 
         const contextStr = JSON.stringify(data);
@@ -264,79 +396,148 @@ If asked about your career trajectory or timeline, respond with a short introduc
         setMessages(prev => [...prev, { id: Date.now().toString(), role: 'user', content: query }]);
         if (query === input) setInput('');
 
-        try {
-            const contextMessages = messages.map(m => ({ role: m.role, content: m.content }));
-            const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-                method: "POST",
-                headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    model: "llama-3.3-70b-versatile",
-                    stream: true, // Enable Streaming
-                    messages: [
-                        { role: "system", content: getSystemPrompt() },
-                        ...contextMessages,
-                        { role: "user", content: query }
-                    ]
-                })
-            });
-            
-            if (!response.ok) throw new Error("API Error");
+        const contextMessages = messages.map(m => ({ role: m.role, content: m.content }));
+        
+        // Fallback loop
+        for (let i = 0; i < PROVIDERS.length; i++) {
+            const provider = PROVIDERS[i];
+            console.log(`Attempting with provider: ${provider.name}`);
 
-            setIsLoading(false);
-            setIsStreaming(true);
+            try {
+                let response;
+                if (provider.type === 'openai') {
+                    const headers = { 
+                        "Authorization": `Bearer ${provider.apiKey}`, 
+                        "Content-Type": "application/json" 
+                    };
+                    
+                    if (provider.name === 'OpenRouter') {
+                        headers["HTTP-Referer"] = window.location.origin;
+                        headers["X-Title"] = "AI Portfolio CV";
+                    }
 
-            // Create placeholder text
-            const messageId = (Date.now() + 1).toString();
-            setMessages(prev => [...prev, { id: messageId, role: 'assistant', content: '', rating: null }]);
+                    response = await fetch(provider.endpoint, {
+                        method: "POST",
+                        headers: headers,
+                        body: JSON.stringify({
+                            model: provider.model,
+                            stream: true,
+                            messages: [
+                                { role: "system", content: getSystemPrompt() },
+                                ...contextMessages,
+                                { role: "user", content: query }
+                            ]
+                        })
+                    });
+                } else if (provider.type === 'gemini') {
+                    const contents = contextMessages.map(m => ({
+                        role: m.role === 'assistant' ? 'model' : 'user',
+                        parts: [{ text: m.content }]
+                    }));
+                    contents.push({ role: 'user', parts: [{ text: query }] });
 
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder("utf-8");
-            let done = false;
-            let fullAiText = "";
+                    response = await fetch(`${provider.endpoint}?key=${provider.apiKey}`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            contents: contents,
+                            systemInstruction: { parts: [{ text: getSystemPrompt() }] }
+                        })
+                    });
+                }
 
-            while (!done) {
-                const { value, done: readerDone } = await reader.read();
-                done = readerDone;
-                if (value) {
-                    const chunk = decoder.decode(value, { stream: true });
-                    const lines = chunk.split('\n');
-                    for (const line of lines) {
-                        if (line.startsWith('data: ') && line !== 'data: [DONE]') {
-                            try {
-                                const dataObj = JSON.parse(line.slice(6));
-                                if (dataObj.choices[0].delta.content) {
-                                    fullAiText += dataObj.choices[0].delta.content;
-                                    setMessages(prev => prev.map(m => m.id === messageId ? { ...m, content: fullAiText } : m));
+                if (response.status === 429) {
+                    console.warn(`${provider.name} rate limited. Trying next...`);
+                    if (i < PROVIDERS.length - 1) continue;
+                    throw new Error("Rate Limit");
+                }
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    console.error(`${provider.name} error:`, errorData);
+                    if (i < PROVIDERS.length - 1) continue;
+                    throw new Error("API Error");
+                }
+
+                setIsLoading(false);
+                setIsStreaming(true);
+
+                const messageId = (Date.now() + 1).toString();
+                setMessages(prev => [...prev, { id: messageId, role: 'assistant', content: '', rating: null }]);
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder("utf-8");
+                let done = false;
+                let fullAiText = "";
+
+                while (!done) {
+                    const { value, done: readerDone } = await reader.read();
+                    done = readerDone;
+                    if (value) {
+                        const chunk = decoder.decode(value, { stream: true });
+                        
+                        if (provider.type === 'openai') {
+                            const lines = chunk.split('\n');
+                            for (const line of lines) {
+                                if (line.startsWith('data: ') && line !== 'data: [DONE]') {
+                                    try {
+                                        const dataObj = JSON.parse(line.slice(6));
+                                        const content = dataObj.choices[0]?.delta?.content;
+                                        if (content) {
+                                            fullAiText += content;
+                                            setMessages(prev => prev.map(m => m.id === messageId ? { ...m, content: fullAiText } : m));
+                                        }
+                                    } catch (e) {}
                                 }
-                            } catch (e) {
-                                // Ignore unparseable chunks
                             }
+                        } else if (provider.type === 'gemini') {
+                            try {
+                                const parts = chunk.split('}\n{');
+                                for (let j = 0; j < parts.length; j++) {
+                                    let part = parts[j];
+                                    if (j > 0) part = '{' + part;
+                                    if (j < parts.length - 1) part = part + '}';
+                                    part = part.trim().replace(/^\[/, '').replace(/,$/, '').replace(/\]$/, '');
+                                    try {
+                                        const dataObj = JSON.parse(part);
+                                        const content = dataObj.candidates?.[0]?.content?.parts?.[0]?.text;
+                                        if (content) {
+                                            fullAiText += content;
+                                            setMessages(prev => prev.map(m => m.id === messageId ? { ...m, content: fullAiText } : m));
+                                        }
+                                    } catch (e) {}
+                                }
+                            } catch (e) {}
                         }
                     }
                 }
-            }
-            
-            // TTS handling at the end of the stream
-            if (isVoiceEnabled && window.speechSynthesis) {
-                window.speechSynthesis.cancel();
-                const cleanText = fullAiText.replace(/[*#`]/g, '').replace(/project-card|radar-chart|timeline/g, '');
-                const utterance = new SpeechSynthesisUtterance(cleanText);
-                utterance.lang = lang === 'es' ? 'es-ES' : 'en-US';
-                const voices = window.speechSynthesis.getVoices();
-                const matchedVoices = voices.filter(v => v.lang.startsWith(lang));
-                if (matchedVoices.length > 0) {
-                    const premiumVoice = matchedVoices.find(v => v.name.toLowerCase().includes('premium') || v.name.toLowerCase().includes('google'));
-                    utterance.voice = premiumVoice || matchedVoices[0];
-                }
-                window.speechSynthesis.speak(utterance);
-            }
+                
+                setIsStreaming(false);
 
-        } catch (error) {
-            console.error(error);
-            setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), role: 'assistant', content: strings.connError, rating: null }]);
-            setIsLoading(false);
-        } finally {
-            setIsStreaming(false);
+                if (isVoiceEnabled && window.speechSynthesis) {
+                    window.speechSynthesis.cancel();
+                    const cleanText = fullAiText.replace(/[*#`]/g, '').replace(/project-card|radar-chart|timeline/g, '');
+                    const utterance = new SpeechSynthesisUtterance(cleanText);
+                    utterance.lang = lang === 'es' ? 'es-ES' : 'en-US';
+                    const voices = window.speechSynthesis.getVoices();
+                    const matchedVoices = voices.filter(v => v.lang.startsWith(lang));
+                    if (matchedVoices.length > 0) {
+                        const premiumVoice = matchedVoices.find(v => v.name.toLowerCase().includes('premium') || v.name.toLowerCase().includes('google'));
+                        utterance.voice = premiumVoice || matchedVoices[0];
+                    }
+                    window.speechSynthesis.speak(utterance);
+                }
+
+                return; 
+
+            } catch (error) {
+                console.error(`Failure with ${provider.name}:`, error);
+                if (i === PROVIDERS.length - 1) {
+                    const errorMsg = error.message === "Rate Limit" ? strings.rateLimitError : strings.connError;
+                    setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), role: 'assistant', content: errorMsg, rating: null }]);
+                    setIsLoading(false);
+                }
+            }
         }
     };
 
@@ -359,7 +560,7 @@ If asked about your career trajectory or timeline, respond with a short introduc
             mediaRecorder.onstop = async () => {
                 setIsRecording(false);
                 setIsLoading(true);
-                
+
                 const mimeType = mediaRecorder.mimeType || 'audio/webm';
                 const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
                 const extension = mimeType.includes('mp4') ? 'm4a' : 'webm';
@@ -377,6 +578,12 @@ If asked about your career trajectory or timeline, respond with a short introduc
                         headers: { "Authorization": `Bearer ${apiKey}` },
                         body: formData
                     });
+                    if (res.status === 429) {
+                        alert(strings.rateLimitError);
+                        setIsLoading(false);
+                        stream.getTracks().forEach(track => track.stop());
+                        return;
+                    }
                     if (!res.ok) throw new Error("Transcription failed");
                     const data = await res.json();
                     transcribedText = data.text;
@@ -410,7 +617,7 @@ If asked about your career trajectory or timeline, respond with a short introduc
         }]);
         if (window.speechSynthesis) window.speechSynthesis.cancel();
     };
-    
+
     const toggleLanguage = () => {
         setLang(lang === 'en' ? 'es' : 'en');
     };
@@ -424,13 +631,13 @@ If asked about your career trajectory or timeline, respond with a short introduc
             <aside className="chat-sidebar glass">
                 <div className="profile-section">
                     {/* Reactive Avatar: 'thinking' when AI streams, 'active' when user types */}
-                    <img 
-                        src={profileImg} 
-                        alt={data?.personal_info?.name || "Luis"} 
-                        className={`profile-avatar ${isStreaming ? 'thinking' : ''} ${isUserTyping ? 'active' : ''}`} 
+                    <img
+                        src={profileImg}
+                        alt={data?.personal_info?.name || "Luis"}
+                        className={`profile-avatar ${isStreaming ? 'thinking' : ''} ${isUserTyping ? 'active' : ''}`}
                     />
                     <h1>{data?.personal_info?.name || "Luis Madrigal Lobo"}</h1>
-                    
+
                     <div className="status-badge">
                         <div className="status-dot"></div>
                         <span>{strings.available}</span>
@@ -441,7 +648,7 @@ If asked about your career trajectory or timeline, respond with a short introduc
                         <p className="profile-education">{data.education_certs[0]}</p>
                     )}
                 </div>
-                
+
                 <div className="nav-actions">
                     <button onClick={toggleTheme} className="btn btn-outline theme-toggle" title="Toggle Theme">
                         {theme === 'dark' ? '☀️' : '🌙'}
@@ -455,8 +662,8 @@ If asked about your career trajectory or timeline, respond with a short introduc
                     <button onClick={() => setShowAnalytics(true)} className="btn btn-outline">
                         {strings.viewAnalytics}
                     </button>
-                    <button 
-                        onClick={() => setIsVoiceEnabled(!isVoiceEnabled)} 
+                    <button
+                        onClick={() => setIsVoiceEnabled(!isVoiceEnabled)}
                         className={`btn ${isVoiceEnabled ? 'btn-primary' : 'btn-outline'}`}
                     >
                         {isVoiceEnabled ? strings.voiceOn : strings.voiceOff}
@@ -468,7 +675,7 @@ If asked about your career trajectory or timeline, respond with a short introduc
                         {strings.downloadPDF}
                     </a>
                 </div>
-                
+
                 <div className="sidebar-footer">
                     <button className="build-link-btn" onClick={() => setShowBuild(true)}>
                         {strings.builtWith}
@@ -480,13 +687,13 @@ If asked about your career trajectory or timeline, respond with a short introduc
                 <div className="chat-header">
                     <div className="modes-tabs">
                         <button className={`mode-tab ${chatMode === 'general' ? 'active' : ''}`} onClick={() => setChatMode('general')}>
-                           {strings.modes.general}
+                            {strings.modes.general}
                         </button>
                         <button className={`mode-tab ${chatMode === 'bigdata' ? 'active' : ''}`} onClick={() => setChatMode('bigdata')}>
-                           🚀 {strings.modes.bigdata}
+                            🚀 {strings.modes.bigdata}
                         </button>
                         <button className={`mode-tab ${chatMode === 'leadership' ? 'active' : ''}`} onClick={() => setChatMode('leadership')}>
-                           👥 {strings.modes.leadership}
+                            👥 {strings.modes.leadership}
                         </button>
                     </div>
                 </div>
@@ -496,7 +703,7 @@ If asked about your career trajectory or timeline, respond with a short introduc
                         <div key={m.id} className={`message-row ${m.role}`}>
                             <div className="message-container">
                                 <div className="message-bubble markdown-body">
-                                    <ReactMarkdown components={markdownComponents}>{m.content}</ReactMarkdown>
+                                    <ReactMarkdown components={markdownComponents}>{processMarkdown(m.content)}</ReactMarkdown>
                                 </div>
                                 {m.role === 'assistant' && (
                                     <div className="rating-actions">
@@ -516,7 +723,7 @@ If asked about your career trajectory or timeline, respond with a short introduc
                     )}
                     <div ref={chatEndRef} />
                 </div>
-                
+
                 <div className="input-area glass">
                     {messages.length === 1 && (
                         <div className="suggestion-chips">
@@ -528,11 +735,11 @@ If asked about your career trajectory or timeline, respond with a short introduc
                         </div>
                     )}
                     <div className="input-pill">
-                        <input 
-                            value={input} 
-                            onChange={e => setInput(e.target.value)} 
-                            onKeyDown={e => e.key === 'Enter' && handleSend()} 
-                            placeholder={isRecording ? strings.listening : strings.placeholder} 
+                        <input
+                            value={input}
+                            onChange={e => setInput(e.target.value)}
+                            onKeyDown={e => e.key === 'Enter' && handleSend()}
+                            placeholder={isRecording ? strings.listening : strings.placeholder}
                             disabled={isRecording || isLoading || isStreaming}
                         />
                         <button onClick={handleMicClick} disabled={(isLoading || isStreaming) && !isRecording} className={`mic-btn ${isRecording ? 'recording' : ''}`} title="Voice message">
@@ -558,7 +765,7 @@ If asked about your career trajectory or timeline, respond with a short introduc
                     </div>
                 </div>
             </main>
-            
+
             {showAnalytics && <AnalyticsDashboard lang={lang} onClose={() => setShowAnalytics(false)} />}
             {showStory && <StorytellingView data={data} lang={lang} onClose={() => setShowStory(false)} />}
             {showBuild && <BuildWithMe lang={lang} onClose={() => setShowBuild(false)} />}
