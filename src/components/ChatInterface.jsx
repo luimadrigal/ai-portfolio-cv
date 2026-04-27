@@ -205,6 +205,7 @@ const markdownComponents = {
         if (!inline && match && match[1] === 'radar-chart') {
             try {
                 const data = safeJsonParse(String(children).trim());
+                if (!Array.isArray(data) || data.length === 0) return <div style={{ padding: '20px', color: 'var(--text-secondary)' }}>No data available for this chart</div>;
                 return (
                     <div className="radar-chart-wrapper" style={{ width: '100%', minHeight: '300px', background: 'rgba(0,0,0,0.2)', borderRadius: '12px', padding: '16px', marginTop: '12px', display: 'block', position: 'relative', overflow: 'hidden' }}>
                         <ResponsiveContainer width="99%" height={300}>
@@ -369,25 +370,20 @@ const ChatInterface = ({ data, pdfPath, lang = 'en', setLang, theme, toggleTheme
                 : "";
 
         const formatInstructions = `
-If asked about technical skills, expertise, or a visual summary of capabilities, respond using a Markdown radar-chart code block. Focus on AI and Leadership skills.
-Example:
-\`\`\`radar-chart
-[{"subject":"AI/ML", "A":95}, {"subject":"AI Agents", "A":90}, {"subject":"Leadership", "A":95}, {"subject":"Innovation", "A":90}, {"subject":"Architecture", "A":85}]
-\`\`\`
-
-If asked about specific achievements, roles, or impact (like AI transformation or agent implementation), present the most relevant project using a Markdown project-card code block. Highlight the impact during the Engineering Director tenure.
-Example:
-\`\`\`project-card
-{"title":"AI Transformation Leader", "description":"Led AI implementation reducing operational overhead by 20% through custom agents...", "technologies":["LLMs", "Python", "LangChain"]}
-\`\`\`
-
-ONLY if asked about career history, trajectory, milestones, or a chronological overview, use the Markdown timeline code block. Avoid using the timeline for technical or topical questions.
-Example:
-\`\`\`timeline
-[{"date":"2022 - Present", "title":"Engineering Director", "description":"...", "icon":"rocket"}]
-\`\`\`
-
-Select the SINGLE most appropriate component for the user's specific request. Be concise in your introductory text.
+CRITICAL INSTRUCTIONS:
+1. ALWAYS start your response with a brief (1-2 sentences) textual introduction. NEVER respond with only a code block.
+2. If asked about technical skills or expertise summary, use a Markdown radar-chart code block.
+   Example:
+   \`\`\`radar-chart
+   [{"subject":"AI/ML", "A":95}, {"subject":"AI Agents", "A":90}, {"subject":"Leadership", "A":95}, {"subject":"Innovation", "A":90}, {"subject":"Architecture", "A":85}]
+   \`\`\`
+3. If asked about specific EXPERIENCE, ACHIEVEMENTS, or IMPACT (like AI implementation in Pharma), use a Markdown project-card code block. This is the preferred way to show his work at Publicis Groupe.
+   Example:
+   \`\`\`project-card
+   {"title":"AI Transformation Leader", "description":"Led AI implementation reducing operational overhead by 20%...", "technologies":["LLMs", "Python", "LangChain"]}
+   \`\`\`
+4. Use the timeline ONLY for chronological career overviews.
+5. Highlight that Luis's AI expertise is centered in his current Engineering Director role (2022-Present).
 `.trim();
 
         const contextStr = JSON.stringify(data);
