@@ -469,47 +469,66 @@ Select the SINGLE most appropriate component for the user's specific request. Be
                 const decoder = new TextDecoder("utf-8");
                 let done = false;
                 let fullAiText = "";
+                let buffer = "";
 
                 while (!done) {
                     const { value, done: readerDone } = await reader.read();
                     done = readerDone;
                     if (value) {
-                        const chunk = decoder.decode(value, { stream: true });
+                        buffer += decoder.decode(value, { stream: true });
                         
                         if (provider.type === 'openai') {
-                            const lines = chunk.split('\n');
+                            const lines = buffer.split('\n');
+                            buffer = lines.pop() || ""; // Keep partial line in buffer
+                            
                             for (const line of lines) {
-                                if (line.startsWith('data: ') && line !== 'data: [DONE]') {
+                                const cleanLine = line.trim();
+                                if (cleanLine.startsWith('data: ') && cleanLine !== 'data: [DONE]') {
                                     try {
-                                        const dataObj = JSON.parse(line.slice(6));
+                                        const dataObj = JSON.parse(cleanLine.slice(6));
                                         const content = dataObj.choices[0]?.delta?.content;
                                         if (content) {
                                             fullAiText += content;
                                             setMessages(prev => prev.map(m => m.id === messageId ? { ...m, content: fullAiText } : m));
                                         }
-                                    } catch (e) {}
+                                    } catch (e) {
+                                        console.debug("JSON parse error in stream chunk:", e);
+                                    }
                                 }
                             }
                         } else if (provider.type === 'gemini') {
-                            try {
-                                const parts = chunk.split('}\n{');
-                                for (let j = 0; j < parts.length; j++) {
-                                    let part = parts[j];
-                                    if (j > 0) part = '{' + part;
-                                    if (j < parts.length - 1) part = part + '}';
-                                    part = part.trim().replace(/^\[/, '').replace(/,$/, '').replace(/\]$/, '');
-                                    try {
-                                        const dataObj = JSON.parse(part);
-                                        const content = dataObj.candidates?.[0]?.content?.parts?.[0]?.text;
-                                        if (content) {
-                                            fullAiText += content;
-                                            setMessages(prev => prev.map(m => m.id === messageId ? { ...m, content: fullAiText } : m));
-                                        }
-                                    } catch (e) {}
+                            const parts = buffer.split('}\n{');
+                            buffer = parts.pop() || ""; // Keep partial JSON in buffer
+                            
+                            for (let j = 0; j < parts.length; j++) {
+                                let part = parts[j];
+                                if (j === 0 && !part.startsWith('{')) {
+                                    // Handle start of array if it's the very first part
+                                    part = part.replace(/^\[/, '');
                                 }
-                            } catch (e) {}
+                                if (!part.startsWith('{')) part = '{' + part;
+                                if (!part.endsWith('}')) part = part + '}';
+                                
+                                try {
+                                    const dataObj = JSON.parse(part);
+                                    const content = dataObj.candidates?.[0]?.content?.parts?.[0]?.text;
+                                    if (content) {
+                                        fullAiText += content;
+                                        setMessages(prev => prev.map(m => m.id === messageId ? { ...m, content: fullAiText } : m));
+                                    }
+                                } catch (e) {
+                                    // If parsing fails, put it back in buffer and wait for more data
+                                    buffer = part + (buffer ? '\n' + buffer : '');
+                                    break; 
+                                }
+                            }
                         }
                     }
+                }
+
+                // Final check for empty response
+                if (!fullAiText.trim()) {
+                    throw new Error("Empty Response");
                 }
                 
                 setIsStreaming(false);
@@ -573,9 +592,10 @@ Select the SINGLE most appropriate component for the user's specific request. Be
 
                 let transcribedText = "";
                 try {
+                    const transcribeProvider = PROVIDERS.find(p => p.name === 'Groq') || PROVIDERS[0];
                     const res = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
                         method: "POST",
-                        headers: { "Authorization": `Bearer ${apiKey}` },
+                        headers: { "Authorization": `Bearer ${transcribeProvider.apiKey}` },
                         body: formData
                     });
                     if (res.status === 429) {

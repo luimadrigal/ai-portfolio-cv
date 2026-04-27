@@ -3,12 +3,12 @@ export const cvData = {
     en: {
         personal_info: {
             name: "Luis Madrigal Lobo",
-            title: "Head of Engineering | Engineering Executive | AI Transformation & Big Data | Global Technical Operations",
+            title: "Head of Engineering | Engineering Executive | AI Transformation & Technical Innovation | Global Technical Operations",
             location: "Heredia, Costa Rica",
             email: "luismadrigal@gmail.com",
             linkedin: "https://www.linkedin.com/in/luis-madrigal-l/",
-            summary: "Engineering Director with 20+ years of experience transforming software organizations across Pharma, Fintech, and Tech. I specialize in bridging the gap between technical roadmaps and business growth, turning engineering into a primary driver of ROI and scalability. Currently completing a Master’s in Big Data & Business Analytics, I focus on leading global organizations (75+ headcount) through data-driven leadership and the strategic implementation of AI Agents within the SDLC.",
-            about_me: "Happily married to Evelyn and proud father to Luka and Toby. My biggest motivation is my family, spending quality time with them, enjoying job stability, and contributing my experience. I love working with people; I consider my greatest strength to be motivating my team, effectively delegating, and building trust. Furthermore, I am passionate about innovating and automating processes. I deeply enjoy database development, possessing extensive experience in Microsoft SQL Server and query optimization."
+            summary: "Engineering Director with 20+ years of experience transforming software organizations across Pharma, Fintech, and Tech. I specialize in bridging the gap between technical roadmaps and business growth, turning engineering into a primary driver of ROI and scalability. I focus on leading global organizations (75+ headcount) through the strategic implementation of AI Agents within the SDLC. Currently completing a Master’s in Big Data & Business Analytics to complement my technical vision.",
+            about_me: "Happily married to Evelyn and proud father to Luka and Toby. My biggest motivation is my family, spending quality time with them, enjoying job stability, and contributing my experience. I love working with people; I consider my greatest strength to be motivating my team, effectively delegating, and building trust. Furthermore, I am passionate about innovating and automating processes using IA."
         },
         core_impact: [
             "Globally led distributed teams across LATAM, EMEA, and APAC, executing high-stakes migrations in Azure and Salesforce.",
@@ -103,12 +103,12 @@ export const cvData = {
     es: {
         personal_info: {
             name: "Luis Madrigal Lobo",
-            title: "Director de Ingeniería | Ejecutivo de Ingeniería | Transformación de IA y Big Data | Operaciones Técnicas Globales",
+            title: "Director de Ingeniería | Ejecutivo de Ingeniería | Transformación de IA e Innovación Técnica | Operaciones Técnicas Globales",
             location: "Heredia, Costa Rica",
             email: "luismadrigal@gmail.com",
             linkedin: "https://www.linkedin.com/in/luis-madrigal-l/",
-            summary: "Director de Ingeniería con más de 20 años de experiencia transformando organizaciones de software en Pharma, Fintech y Tecnología. Especializado en alinear la visión técnica con el crecimiento del negocio, convirtiendo la ingeniería en un motor principal de ROI y escalabilidad. Actualmente cursando una Maestría en Big Data & Business Analytics, enfocado en liderar organizaciones globales (más de 75 personas) mediante liderazgo basado en datos e implementación estratégica de Agentes de IA en el SDLC.",
-            about_me: "Casado felizmente con Evelyn y orgulloso padre de Luka y Toby. Mi mayor motivación es mi familia, el tiempo de calidad con ellos, disfrutar de estabilidad laboral y aportar mi experiencia a la organización. Amo trabajar con la gente; considero que mi mayor fortaleza es motivar a mi equipo de trabajo, saber delegar y generar confianza. Además, me apasiona innovar y automatizar procesos. Disfruto profundamente el área de base de datos, contando con amplia experiencia técnica en Microsoft SQL y optimización de queries."
+            summary: "Director de Ingeniería con más de 20 años de experiencia transformando organizaciones de software en Pharma, Fintech y Tecnología. Especializado en alinear la visión técnica con el crecimiento del negocio, convirtiendo la ingeniería en un motor principal de ROI y escalabilidad. Enfocado en liderar organizaciones globales (más de 75 personas) mediante la implementación estratégica de Agentes de IA en el SDLC. Actualmente cursando una Maestría en Big Data & Business Analytics para complementar mi visión técnica.",
+            about_me: "Casado felizmente con Evelyn y orgulloso padre de Luka y Toby. Mi mayor motivación es mi familia, el tiempo de calidad con ellos, disfrutar de estabilidad laboral y aportar mi experiencia a la organización. Amo trabajar con la gente; considero que mi mayor fortaleza es motivar a mi equipo de trabajo, saber delegar y generar confianza. Además, me apasiona innovar y automatizar procesos mediante el uso de IA."
         },
         core_impact: [
             "Liderazgo global de equipos distribuidos en LATAM, EMEA y APAC, ejecutando migraciones críticas en los ecosistemas de Azure y Salesforce.",
