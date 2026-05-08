@@ -23,6 +23,10 @@ const UI_STRINGS = {
         downloadPDF: "Download PDF",
         viewAnalytics: "📊 View Analytics",
         analyzeMatch: "✨ Analyze Match",
+        accessLocked: "Access Restricted",
+        enterCode: "Enter access code to chat with Luis's AI",
+        unlock: "Unlock Assistant",
+        wrongCode: "Invalid code. Please try again.",
         builtWith: "Built with React + Vite + AI",
         listening: "Listening...",
         placeholder: "Ask me about Luis's experience...",
@@ -62,6 +66,10 @@ const UI_STRINGS = {
         downloadPDF: "Descargar PDF",
         viewAnalytics: "📊 Ver Analíticas",
         analyzeMatch: "✨ Analizar Match",
+        accessLocked: "Acceso Restringido",
+        enterCode: "Ingresa el código de acceso para chatear con la IA de Luis",
+        unlock: "Desbloquear Asistente",
+        wrongCode: "Código incorrecto. Intenta de nuevo.",
         builtWith: "Construido con React + Vite + AI",
         listening: "Escuchando...",
         placeholder: "Pregúntame sobre la experiencia de Luis...",
@@ -311,9 +319,25 @@ const ChatInterface = ({ data, pdfPath, lang = 'en', setLang, theme, toggleTheme
     const [chatMode, setChatMode] = useState('general');
     const [showAnalytics, setShowAnalytics] = useState(false);
     const [showStory, setShowStory] = useState(false);
-    const [showBuild, setShowBuild] = useState(false);
     const [showJDAnalyzer, setShowJDAnalyzer] = useState(false);
     const [isUserTyping, setIsUserTyping] = useState(false);
+    
+    // Simple access control
+    const [isLocked, setIsLocked] = useState(() => {
+        return !sessionStorage.getItem('portfolio-unlocked') && !!import.meta.env.VITE_ACCESS_KEY;
+    });
+    const [accessCode, setAccessCode] = useState('');
+    const [accessError, setAccessError] = useState(false);
+
+    const handleUnlock = () => {
+        if (accessCode === import.meta.env.VITE_ACCESS_KEY) {
+            sessionStorage.setItem('portfolio-unlocked', 'true');
+            setIsLocked(false);
+            setAccessError(false);
+        } else {
+            setAccessError(true);
+        }
+    };
 
     const defaultMessage = {
         id: Date.now().toString(),
@@ -656,6 +680,29 @@ CRITICAL INSTRUCTIONS:
 
     return (
         <div className="chat-layout">
+            {isLocked && (
+                <div className="access-overlay">
+                    <div className="access-card glass animate-fade-in">
+                        <div className="access-icon">🔒</div>
+                        <h2>{strings.accessLocked}</h2>
+                        <p>{strings.enterCode}</p>
+                        <input 
+                            type="password" 
+                            className="access-input"
+                            value={accessCode}
+                            onChange={(e) => setAccessCode(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleUnlock()}
+                            placeholder="••••••"
+                            autoFocus
+                        />
+                        {accessError && <p className="access-error">{strings.wrongCode}</p>}
+                        <button className="btn btn-primary" onClick={handleUnlock}>
+                            {strings.unlock}
+                        </button>
+                    </div>
+                </div>
+            )}
+
             <aside className="chat-sidebar glass">
                 <div className="profile-section">
                     {/* Reactive Avatar: 'thinking' when AI streams, 'active' when user types */}

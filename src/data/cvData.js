@@ -3,11 +3,11 @@ export const cvData = {
     en: {
         personal_info: {
             name: "Luis Madrigal Lobo",
-            title: "Head of Engineering | Engineering Executive | AI Transformation & Technical Innovation | Global Technical Operations",
+            title: "Chief Technology Officer | Engineering Director | AI Strategy & Global Operations",
             location: "Heredia, Costa Rica",
             email: "luismadrigal@gmail.com",
             linkedin: "https://www.linkedin.com/in/luis-madrigal-l/",
-            summary: "Engineering Director with 20+ years of experience transforming software organizations across Pharma, Fintech, and Tech. I specialize in bridging the gap between technical roadmaps and business growth, turning engineering into a primary driver of ROI and scalability. I focus on leading global organizations (75+ headcount) through the strategic implementation of AI Agents within the SDLC. Currently completing a Master’s in Big Data & Business Analytics to complement my technical vision.",
+            summary: "Strategic Technology Executive with 25+ years of experience driving digital transformation across Pharma, Fintech, and Enterprise Tech. Expert in architecting Global Capability Centers (GCC) and integrating Generative AI into the SDLC to maximize ROI and operational velocity. Proven track record of balancing high-level technical strategy with operational efficiency to drive double-digit ROI while leading cross-functional global teams. Currently completing a Master’s in Big Data & Business Analytics to complement my technical vision.",
             about_me: "Happily married to Evelyn and proud father to Luka and Toby. My biggest motivation is my family, spending quality time with them, enjoying job stability, and contributing my experience. I love working with people; I consider my greatest strength to be motivating my team, effectively delegating, and building trust. Furthermore, I am passionate about innovating and automating processes using IA."
         },
         core_impact: [
@@ -78,8 +78,8 @@ export const cvData = {
             }
         ],
         education_certs: [
-            "Master's in Big Data & Business Analytics - Universidad CESUMA (Expected Aug 2026).",
-            "Executive Diploma in AI & Business Ethics - Universidad CEUPE (Expected Late 2025/2026).",
+            "Master's in Big Data & Business Analytics - Universidad CESUMA (Expected: Late 2026).",
+            "Executive Diploma in AI & Business Ethics - Universidad CEUPE (Expected: Late 2026).",
             "Licenciatura & Bachelor’s in Computer Systems Engineering - U. Fidélitas / U. Latina.",
             "Certified ScrumMaster (CSM) - Scrum Alliance (ID 001311714): Expertise in Agile Operating Models."
         ],
@@ -99,11 +99,11 @@ export const cvData = {
     es: {
         personal_info: {
             name: "Luis Madrigal Lobo",
-            title: "Director de Ingeniería | Ejecutivo de Ingeniería | Transformación de IA e Innovación Técnica | Operaciones Técnicas Globales",
+            title: "Director de Tecnología (CTO) | Director de Ingeniería | Estrategia de IA y Operaciones Globales",
             location: "Heredia, Costa Rica",
             email: "luismadrigal@gmail.com",
             linkedin: "https://www.linkedin.com/in/luis-madrigal-l/",
-            summary: "Director de Ingeniería con más de 20 años de experiencia transformando organizaciones de software en Pharma, Fintech y Tecnología. Especializado en alinear la visión técnica con el crecimiento del negocio, convirtiendo la ingeniería en un motor principal de ROI y escalabilidad. Enfocado en liderar organizaciones globales (más de 75 personas) mediante la implementación estratégica de Agentes de IA en el SDLC. Actualmente cursando una Maestría en Big Data & Business Analytics para complementar mi visión técnica.",
+            summary: "Ejecutivo Estratégico de Tecnología con más de 25 años de experiencia impulsando la transformación digital en Pharma, Fintech y Enterprise Tech. Experto en la arquitectura de Centros de Capacidad Global (GCC) e integración de IA Generativa en el SDLC para maximizar el ROI y la velocidad operativa. Historial comprobado en equilibrar la estrategia técnica de alto nivel con la eficiencia operativa para impulsar un ROI de dos dígitos mientras lidero equipos globales multifuncionales. Actualmente cursando una Maestría en Big Data & Business Analytics para complementar mi visión técnica.",
             about_me: "Casado felizmente con Evelyn y orgulloso padre de Luka y Toby. Mi mayor motivación es mi familia, el tiempo de calidad con ellos, disfrutar de estabilidad laboral y aportar mi experiencia a la organización. Amo trabajar con la gente; considero que mi mayor fortaleza es motivar a mi equipo de trabajo, saber delegar y generar confianza. Además, me apasiona innovar y automatizar procesos mediante el uso de IA."
         },
         core_impact: [
@@ -174,8 +174,8 @@ export const cvData = {
             }
         ],
         education_certs: [
-            "Maestría en Big Data & Análisis de Negocios - Universidad CESUMA (Esperado Ago 2026).",
-            "Diplomado Ejecutivo en IA y Ética Empresarial - Universidad CEUPE (Esperado 2025/2026).",
+            "Maestría en Big Data & Análisis de Negocios - Universidad CESUMA (Esperado: Fines de 2026).",
+            "Diplomado Ejecutivo en IA y Ética Empresarial - Universidad CEUPE (Esperado: Fines de 2026).",
             "Licenciatura e Ingeniería en Sistemas Computacionales - U. Fidélitas / U. Latina.",
             "Certified ScrumMaster (CSM) - Scrum Alliance (ID 001311714): Experto en Modelos Operativos Ágiles."
         ],

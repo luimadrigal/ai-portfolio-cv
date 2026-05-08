@@ -27,7 +27,7 @@ function App() {
   if (!cvData?.[lang]?.personal_info) return null;
 
   // We define the PDF path once to keep the code DRY
-  const pdfPath = `${baseUrl}CV_Luis_Madrigal_Lobo.pdf`;
+  const pdfPath = "dist/CV_Luis_Madrigal_Lobo.pdf";
 
   return (
     <div className="app-container">
