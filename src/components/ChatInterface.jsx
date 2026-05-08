@@ -320,6 +320,7 @@ const ChatInterface = ({ data, pdfPath, lang = 'en', setLang, theme, toggleTheme
     const [showAnalytics, setShowAnalytics] = useState(false);
     const [showStory, setShowStory] = useState(false);
     const [showJDAnalyzer, setShowJDAnalyzer] = useState(false);
+    const [showBuild, setShowBuild] = useState(false);
     const [isUserTyping, setIsUserTyping] = useState(false);
     
     // Simple access control
